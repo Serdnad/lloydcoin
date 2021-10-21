@@ -56,17 +56,15 @@ fn run_client() {
     loop {
         let response = socket.read_message();
 
-        match response {
-            Ok(msg) => {
-                if msg.is_text() {
-                    let text = msg.into_text().unwrap();
-                    let v: LC::Message = serde_json::from_str(&text).unwrap();
+        if(response.is_ok()) {
+            let msg = response.unwrap();
+            if msg.is_text() {
+                let text = msg.into_text().unwrap();
+                let v: LC::Message = serde_json::from_str(&text).unwrap();
 
 
-                    println!("{:?}", v);
-                }
-            },
-            Err(e) => {}
+                println!("{:?}", v);
+            }
         }
     }
 }
