@@ -8,15 +8,16 @@ use serde_json::Value;
 use serde::{Deserialize, Serialize};
 
 mod LC {
-    enum MessageType {
+    #[derive(serde::Serialize, Deserialize, Debug)]
+    pub enum MessageType {
         Request,
         Response,
     }
 
-    #[derive(Serialize, Deserialize)]
-    struct Message {
-        typ: MessageType,
-        action: String,
+    #[derive(Serialize, Deserialize, Debug)]
+    pub struct Message {
+        pub typ: MessageType,
+        pub action: String,
     }
 }
 
@@ -59,25 +60,26 @@ fn main() {
     println!("{:?}", response);
 
     let mut i = 0;
-    loop {
-        i += 1;
-        socket.write_message(Message::text(i.to_string())).unwrap();
+    // loop {
+    i += 1;
+    socket.write_message(Message::text(i.to_string())).unwrap();
 
-        let msg = socket.read_message().unwrap();
+    let msg = socket.read_message().unwrap();
 
-        if msg.is_text() {
-            let text = msg.into_text().unwrap();
-            let v: Value = serde_json::from_str(&text).unwrap();
+    if msg.is_text() {
+        let text = msg.into_text().unwrap();
+        let v: LC::Message = serde_json::from_str(&text).unwrap();
 
-            v.
-        }
+        println!("{:?}", v);
+
+    }
 
 // We do not want to send back ping/pong messages.
-        if msg.is_binary() | | msg.is_text() {
-            println!("{}", &msg.into_text().unwrap());
-            socket.write_message(Message::text((i.to_string()))).unwrap();
-        }
-    }
+//     if msg.is_binary() || msg.is_text() {
+//         println!("{}", &msg.into_text().unwrap());
+//         socket.write_message(Message::text((i.to_string()))).unwrap();
+//     }
+    // }
 }
 
 fn get_nodes() {}
