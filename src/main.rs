@@ -4,7 +4,7 @@ use url::Url;
 use tungstenite::{accept, connect, Message, WebSocket};
 use tungstenite::stream::MaybeTlsStream;
 use std::collections::HashMap;
-use serde_json::Value;
+use serde_json::{Value, json};
 use serde::{Deserialize, Serialize};
 
 mod LC {
@@ -23,65 +23,59 @@ mod LC {
     }
 }
 
-/// A WebSocket echo server
-fn main() {
-    //let mut connections = HashMap::new();
-
-    let ERIC_ADDR: String = String::from("10.8.57.232:9001");
+fn run_server() {
     let localhost = "0.0.0.0:9001";
-    println!("wh");
-    let server = TcpListener::bind(localhost).unwrap();
-    println!("wh");
-// spawn(|| {
-// });
 
-    println!("Run server!");
+    let server = TcpListener::bind(localhost).unwrap();
+
+    println!("Running server!");
+
     spawn(move || {
         for stream in server.incoming() {
             spawn(move || {
                 let mut websocket = accept(stream.unwrap()).unwrap();
-                println!("{:?}", websocket);
-// websocket.write_message(Message::text("cool cool"));
+                println!("Something connected to server");
+                //println!("{:?}", websocket);
 
-                loop {
-                    let msg = websocket.read_message().unwrap();
-
-// We do not want to send back ping/pong messages.
-                    if msg.is_binary() || msg.is_text() {
-                        websocket.write_message(Message::text("that's dumb")).unwrap();
-                    }
-                }
+                let return_msg: Value = json!(LC::Message {
+                    typ: LC::MessageType::Request,
+                    action: "get nodes".to_string()
+                });
+                websocket.write_message(Message::text(return_msg.to_string()));
             });
         }
     });
+}
 
-    let ERIC = "ws://10.8.57.232:9001";
-    let (mut socket, response) = connect(Url::parse("ws://10.8.57.232:9001").unwrap()).unwrap();
-    connections[ERIC] = socket;
+fn run_client() {
+    let ERIC: String = "ws://10.8.57.232:9001".to_string();
+    let (mut socket, response) = connect(Url::parse(&ERIC).unwrap()).unwrap();
 
     println!("{:?}", response);
 
-    let mut i = 0;
-    // loop {
-    i += 1;
-    socket.write_message(Message::text(i.to_string())).unwrap();
+    loop {
+        let response = socket.read_message();
 
-    let msg = socket.read_message().unwrap();
+        match response {
+            Ok(msg) => {
+                if msg.is_text() {
+                    let text = msg.into_text().unwrap();
+                    let v: LC::Message = serde_json::from_str(&text).unwrap();
 
-    if msg.is_text() {
-        let text = msg.into_text().unwrap();
-        let v: LC::Message = serde_json::from_str(&text).unwrap();
 
-        println!("{:?}", v);
-
+                    println!("{:?}", v);
+                }
+            },
+            Err(e) => {}
+        }
     }
+}
 
-// We do not want to send back ping/pong messages.
-//     if msg.is_binary() || msg.is_text() {
-//         println!("{}", &msg.into_text().unwrap());
-//         socket.write_message(Message::text((i.to_string()))).unwrap();
-//     }
-    // }
+/// A WebSocket echo server
+fn main() {
+    run_server();
+
+    run_client();
 }
 
 fn get_nodes() {}
