@@ -43,25 +43,28 @@ mod LC {
 
 
 fn run_server() {
-    let mut sockets = HashMap::new();
 
-    let localhost = "0.0.0.0:9001";
+    let localhost = "0.0.0.0:9002";
     let server = TcpListener::bind(localhost).unwrap();
 
     println!("Running server!");
 
     spawn(move || {
+        let sockets = Arc::new(Mutex::new(HashMap::new()));
         for stream in server.incoming() {
+            let thread_socket = sockets.clone();
             spawn(move || {
                 let websocket = accept(stream.unwrap()).unwrap();
                 println!("Something connected to server");
                 let a = websocket.get_ref().peer_addr().unwrap().to_string();
-                sockets.insert(String::from(a), Arc::new(websocket));
+                thread_socket.lock().unwrap().insert(String::from(&a), websocket);
                 // SOCKETS.lock().unwrap().insert(a, websocket);
 
                 loop {
-                    let msg = sockets.get(&a).unwrap().read_message().unwrap().into_text().unwrap(); // .read_message().unwrap().into_text().unwrap();
-
+                    let mut guard = thread_socket.lock().unwrap();
+                    let msg = guard.get_mut(&a).unwrap().read_message().unwrap().into_text().unwrap(); // .read_message().unwrap().into_text().unwrap();
+                    println!("{:?}", msg);
+                    std::mem::drop(guard);
 
                     let s: LC::Message = serde_json::from_str(&msg).unwrap();
 
@@ -81,7 +84,9 @@ fn run_server() {
                                     action: None,
                                     data: Some(json!(a).to_string().as_str())
                                     });
-                                    sockets.get(&a).unwrap().write_message(Message::text(resp.to_string()));
+                                    let mut guard = thread_socket.lock().unwrap();
+                                    let send = guard.get_mut(&a).unwrap().write_message(Message::text(resp.to_string()));
+                                    std::mem::drop(guard);
                                 }
                                 _ => {}
                             }
@@ -90,27 +95,22 @@ fn run_server() {
                     }
                 }
 
-                //println!("{:?}", websocket);
-
-                let return_msg: Value = json!(LC::Message {
-                    typ: LC::MessageType::Request,
-                    action: Some("get_nodes"),
-                    data: None,
-                });
-                websocket.write_message(Message::text(return_msg.to_string()));
             });
         }
     });
 }
 
 fn run_client() {
-    let GOD: String = "ws://10.8.4.155:9001".to_string();
+    let GOD: String = "ws://10.8.57.232:9001".to_string();
     let (mut socket, response) = connect(Url::parse(&GOD).unwrap()).unwrap();
+
+    println!("client connected to server");
 
     // spawn(|| {
     //     let msg = socket.read_message().unwrap();
     //     println!("{:?}", msg);
     // });
+    println!("{:?}", response);
 
     let request = json!(LC::Message {
                     typ: LC::MessageType::Request,
@@ -120,24 +120,23 @@ fn run_client() {
     socket.write_message(Message::text(request.to_string()));
 
     // has to be a FAST reader
-    let msg = socket.read_message().unwrap();
-    println!("{:?}", msg);
+    //let msg = socket.read_message().unwrap();
+    //println!("{:?}", msg);
 
 
-    // loop {
-    //     let response = socket.read_message();
-    //
-    //     if response.is_ok() {
-    //         let msg = response.unwrap();
-    //         if msg.is_text() {
-    //             let text = msg.into_text().unwrap();
-    //             let v: LC::Message = serde_json::from_str(&text).unwrap();
-    //
-    //
-    //             println!("{:?}", v);
-    //         }
-    //     }
-    // }
+    loop {
+        let response = socket.read_message();
+    
+         if response.is_ok() {
+             let msg = response.unwrap();
+             if msg.is_text() {
+                 let text = msg.into_text().unwrap();
+    
+    
+                 println!("{:?}", text);
+             }
+         }
+     }
 }
 
 /// A WebSocket echo server
