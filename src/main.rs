@@ -8,7 +8,9 @@ use serde_json::Value;
 use serde::{Deserialize, Serialize};
 
 mod LC {
-    #[derive(serde::Serialize, Deserialize, Debug)]
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize, Deserialize, Debug)]
     pub enum MessageType {
         Request,
         Response,
@@ -23,7 +25,7 @@ mod LC {
 
 /// A WebSocket echo server
 fn main() {
-    let mut connections = HashMap::new();
+    //let mut connections = HashMap::new();
 
     let ERIC_ADDR: String = String::from("10.8.57.232:9001");
     let localhost = "0.0.0.0:9001";
