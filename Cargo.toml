@@ -7,3 +7,5 @@ edition = "2018"
 
 [dependencies]
 tungstenite = "0.15.0"
+url = "2.2.2"
+serde_json ="1.0.68"
