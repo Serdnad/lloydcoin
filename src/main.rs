@@ -42,29 +42,29 @@ mod LC {
 }
 
 
-fn run_server() {
+fn run_server(node_ips: Arc<Mutex<Vec<String>>>) {
 
-    let localhost = "0.0.0.0:9002";
+    let localhost = "0.0.0.0:9001";
     let server = TcpListener::bind(localhost).unwrap();
 
     println!("Running server!");
 
     spawn(move || {
-        let sockets = Arc::new(Mutex::new(HashMap::new()));
         for stream in server.incoming() {
-            let thread_socket = sockets.clone();
+
+            let thread_ips = Arc::clone(&node_ips);
             spawn(move || {
-                let websocket = accept(stream.unwrap()).unwrap();
+
+                let mut websocket = accept(stream.unwrap()).unwrap();
                 println!("Something connected to server");
-                let a = websocket.get_ref().peer_addr().unwrap().to_string();
-                thread_socket.lock().unwrap().insert(String::from(&a), websocket);
-                // SOCKETS.lock().unwrap().insert(a, websocket);
+                let ip_addr = websocket.get_ref().peer_addr().unwrap().to_string();
+                thread_ips.lock().unwrap().push(String::from(&ip_addr));
 
                 loop {
-                    let mut guard = thread_socket.lock().unwrap();
-                    let msg = guard.get_mut(&a).unwrap().read_message().unwrap().into_text().unwrap(); // .read_message().unwrap().into_text().unwrap();
+                    println!("test");
+                    
+                    let msg = websocket.read_message().unwrap().into_text().unwrap(); 
                     println!("{:?}", msg);
-                    std::mem::drop(guard);
 
                     let s: LC::Message = serde_json::from_str(&msg).unwrap();
 
@@ -76,17 +76,14 @@ fn run_server() {
 
 
                                     // let a: Vec<&String> = sockets.get_ .keys().into_iter().collect();
-                                    println!("{:?}", a);
 
 
                                     let resp = json!(LC::Message {
                                     typ: LC::MessageType::Response,
                                     action: None,
-                                    data: Some(json!(a).to_string().as_str())
+                                    data: Some(json!(ip_addr).to_string().as_str())
                                     });
-                                    let mut guard = thread_socket.lock().unwrap();
-                                    let send = guard.get_mut(&a).unwrap().write_message(Message::text(resp.to_string()));
-                                    std::mem::drop(guard);
+                                    let send =websocket.write_message(Message::text(resp.to_string()));
                                 }
                                 _ => {}
                             }
@@ -100,7 +97,7 @@ fn run_server() {
     });
 }
 
-fn run_client() {
+fn run_client(node_ips: Arc<Mutex<Vec<String>>>) {
     let GOD: String = "ws://10.8.57.232:9001".to_string();
     let (mut socket, response) = connect(Url::parse(&GOD).unwrap()).unwrap();
 
@@ -139,9 +136,10 @@ fn run_client() {
      }
 }
 
-/// A WebSocket echo server
 fn main() {
-    run_server();
+    let node_ips: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
 
-    run_client();
+    run_server(Arc::clone(&node_ips));
+
+    run_client(Arc::clone(&node_ips));
 }
