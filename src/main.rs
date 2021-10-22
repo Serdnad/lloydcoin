@@ -137,7 +137,7 @@ impl Server {
 
 fn run_server(node: Node) {
 
-    let localhost = "0.0.0.0:9002";
+    let localhost = "0.0.0.0:9001";
 
     spawn(move || listen(localhost, 
         |socket| {
