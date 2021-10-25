@@ -1,14 +1,34 @@
 use yew::prelude::*;
+//use std::sync::{Mutex, Arc};
+//use std::thread::spawn;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+
+//extern crate ws;
+//use ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake};
 
 enum Msg {
     AddOne,
 }
 
+type IpAddresses = Arc<Mutex<Vec<String>>>;
+
+fn set_ips(connections: &mut IpAddresses, ips: Vec<String>) {
+    let mut list = connections.lock().unwrap();
+    *list = ips;
+}
+
+fn get_ips(connections: &IpAddresses) -> Vec<String> {
+    let list = connections.lock().unwrap();
+    list.clone()
+}
+
+
 struct Model {
-    // `ComponentLink` is like a reference to a component.
-    // It can be used to send messages to the component
     link: ComponentLink<Self>,
     value: i64,
+    connections: IpAddresses,
+    ips: Vec<String>
 }
 
 impl Component for Model {
@@ -19,6 +39,8 @@ impl Component for Model {
         Self {
             link,
             value: 0,
+            connections: Arc::new(Mutex::new(Vec::new())),
+            ips: Vec::new()
         }
     }
 
@@ -43,8 +65,8 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <div>
-                <button onclick=self.link.callback(|_| Msg::AddOne)>{ "+1" }</button>
-                <p>{ self.value }</p>
+                <p>{ self.ips.clone() }</p>
+                <input type="button" value="Connect to ips"/>
             </div>
         }
     }
