@@ -1,12 +1,12 @@
 <template>
   <div id="app">
     <Wallet :ips="ips" v-on:connect="connect" />
-    <input type="button" value="Generate private & public key" v-on:click="generate"/>
-    {{ this.message }}
+    <div>
+        <input type="button" value="Generate private & public key" v-on:click="generate"/>
+    </div>
+    <input v-model="mnemonic" placeholder="10 words passphrase">
     <div id="keys">
-        Mnemnoic: {{ this.mnemonic }}
         Public key: {{ this.publicKey }}
-        Private key: {{ this.privateKey }}
     </div>
   </div>
 </template>
@@ -77,10 +77,12 @@ export default {
         }
     },
     async generate () {
-        const mnemonic = bip39.generateMnemonic()
-        this.mnemonic = mnemonic
+        if(this.mnemonic == "") {
+            const mnemonic = bip39.generateMnemonic()
+            this.mnemonic = mnemonic
+        }
 
-        const seed = await bip39.mnemonicToSeed(mnemonic)
+        const seed = await bip39.mnemonicToSeed(this.mnemonic)
         const bits = 1024
         const privateKey = cryptico.generateRSAKey(seed, bits)
         const publicKey = cryptico.publicKeyString(privateKey)
@@ -100,5 +102,7 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  display: flex;
+  flex-direction: column;
 }
 </style>
