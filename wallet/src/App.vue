@@ -4,17 +4,25 @@
     <div>
         <input type="button" value="Generate private & public key" v-on:click="generate"/>
     </div>
+    <div>
+        <input v-model="amount" placeholder="Transaction amount">
+        <input v-model="receiver" placeholder="Receiver">
+        <input type="button" value="Submit transaction" v-on:click="submit" />
+    </div>
     <input v-model="mnemonic" placeholder="10 words passphrase">
     <div id="keys">
-        Public key: {{ this.publicKey }}
+        Public key: {{ this.publicKeyPem }}
+        Private key: {{ this.privateKeyPem }}
     </div>
   </div>
 </template>
 
 <script>
 import Wallet from './components/Wallet.vue'
-const cryptico = require("cryptico")
-const bip39 = require("bip39")
+//const cryptico = require("cryptico")
+//const bip39 = require("bip39")
+//const crypto = require("crypto")
+var forge = require('node-forge')
 
 function ip_to_url(ip) {
     return "ws://"+ip+":9001"
@@ -53,6 +61,18 @@ function connect_to_ip(ip, stuff) {
     return socket
 }
 
+function createVertebra(amount, receiver_id, sender_id) {
+    return {amount, receiver_id, sender_id}
+}
+
+function broadcast(data, connections) {
+    let stringify_data = JSON.stringify(data)
+    
+    for(let socket of Object.values(connections)) {
+        socket.send(stringify_data)
+    }
+}
+
 export default {
   name: 'App',
   components: {
@@ -63,9 +83,13 @@ export default {
       connections: {},
       ips: ["10.8.57.232"],
       publicKey: 0,
+      publicKeyPem: "",
       privateKey: 0,
+      privateKeyPem: "",
       mnemonic: "",
       message: "",
+      amount: 0,
+      receiver: 0
     }
   },
   methods: {
@@ -77,19 +101,41 @@ export default {
         }
     },
     async generate () {
-        if(this.mnemonic == "") {
-            const mnemonic = bip39.generateMnemonic()
-            this.mnemonic = mnemonic
+        let rsa = forge.pki.rsa 
+        
+        rsa.generateKeyPair({bits:1024, workers: -1}, (err, keypair) => {
+            this.privateKey = keypair.privateKey,
+            this.privateKeyPem = forge.pki.privateKeyToPem(this.privateKey)
+
+            this.publicKey = keypair.publicKey
+            this.publicKeyPem = forge.pki.publicKeyToPem(this.publicKey)
+
+        })
+
+    },
+    submit () {
+        let amount = 10
+        let receiver = "none"
+        let sender = this.publicKeyPem
+
+        let vertebra = createVertebra(amount, receiver, sender)
+
+        let md = forge.md.sha1.create()
+        md.update(JSON.stringify(vertebra), 'utf8')
+        let signature = this.privateKey.sign(md)
+
+        vertebra.signature = signature
+
+        let data = {
+            typ: "Request",
+            action: "transaction",
+            data: JSON.stringify(vertebra)
         }
 
-        const seed = await bip39.mnemonicToSeed(this.mnemonic)
-        const bits = 1024
-        const privateKey = cryptico.generateRSAKey(seed, bits)
-        const publicKey = cryptico.publicKeyString(privateKey)
-
-        this.privateKey = privateKey
-        this.publicKey = publicKey
+        broadcast(data, this.connections)
     }
+  },
+  mount () {
   }
 }
 </script>

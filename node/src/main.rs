@@ -17,7 +17,7 @@ extern crate rand;
 extern crate ed25519_dalek;
 
 mod LC {
-    type PublicKey = u32;
+    type PublicKey = String;
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
 
@@ -34,10 +34,12 @@ mod LC {
         pub data: Option<String>,
     }
 
-    pub struct TransactionMessageData {
+    #[derive(Serialize, Deserialize, Debug)]
+    pub struct TransactionData {
         pub sender_id: PublicKey,
         pub amount: u32,
-        pub receiver_id: PublicKey
+        pub receiver_id: PublicKey,
+        pub signature: String,
     }
 }
 
@@ -151,11 +153,21 @@ impl Server {
         Some(response.to_string())
     }
 
+    fn transaction_request(&mut self, transaction: Option<String>) -> Option<String> {
+        let data_str = transaction.unwrap();
+        let data: LC::TransactionData = serde_json::from_str(&data_str).unwrap();
+
+        println!("{:?}", data);
+
+        None
+    }
+
     fn handle_request(&mut self, request: LC::Message) -> Option<String> {
         match request.action {
             Some(action) => {
                 match &*action {
                     "get_nodes" => self.get_nodes_request(),
+                    "transaction" => self.transaction_request(request.data),
                     _ => None
                 }
             },
