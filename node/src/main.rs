@@ -7,7 +7,8 @@ mod LC;
 mod node;
 mod server;
 mod network;
-
+mod transaction;
+mod node_sharing;
 
 fn main() {
     let node: node::Node = Default::default();
