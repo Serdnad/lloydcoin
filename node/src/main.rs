@@ -1,14 +1,9 @@
 use std::net::{TcpListener, TcpStream};
 use std::thread::spawn;
 use url::Url;
-use std::collections::HashMap;
 use serde_json::{Value, json};
 use serde::{Deserialize, Serialize};
 use crate::LC::MessageType;
-
-use std::collections::LinkedList;
-
-use std::sync::{Mutex, Arc};
 
 extern crate ws;
 use ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake};
@@ -21,6 +16,8 @@ use rsa::{pkcs8, hash, padding};
 use rsa::PublicKey;
 
 use sha2::{Sha256, Digest};
+
+mod node;
 
 mod LC {
     type PublicKey = String;
@@ -56,56 +53,9 @@ mod LC {
     }
 }
 
-type PublicKeyNum = u32;
-
-struct Vertebra {
-    balance: (PublicKeyNum, u32)
-}
-
-type Connections = Arc<Mutex<HashMap<String, Sender>>>;
-type Snake = Arc<Mutex<LinkedList<Vertebra>>>;
-
-struct Node {
-    connections: Connections,
-    //snake: Snake
-}
-
-impl Clone for Node {
-    fn clone(&self) -> Self {
-        Node {
-            connections: Arc::clone(&self.connections)
-        }
-    }
-}
-
-impl Default for Node {
-    fn default() -> Self {
-        Node {
-            connections: Arc::new(Mutex::new(HashMap::new()))
-        }
-    }
-}
-
-impl Node {
-    fn add_new_connection(&mut self, socket: &Sender, ip_addr: String) {
-        let mut map = self.connections.lock().unwrap();
-        map.insert(ip_addr, socket.clone());
-    }
-
-    fn get_connections(&mut self) -> Vec<String> {
-        let mut map = self.connections.lock().unwrap();
-        map.keys().cloned().collect()
-    }
-
-    fn contains_ip(&mut self, ip: &str) -> bool {
-        let mut map = self.connections.lock().unwrap();
-        map.contains_key(ip)
-    }
-}
-
 struct Server {
     socket: Sender,
-    node: Node
+    node: node::Node
 }
 
 impl Handler for Server {
@@ -257,7 +207,7 @@ impl Server {
 
 
 
-fn run_server(node: Node) {
+fn run_server(node: node::Node) {
 
     let localhost = "0.0.0.0:9001";
 
@@ -272,7 +222,7 @@ fn run_server(node: Node) {
     println!("Running server!");
 }
 
-fn connect_to_ip(ip: String, node: Node) {
+fn connect_to_ip(ip: String, node: node::Node) {
 
     spawn(move || {
         connect(ip, |socket| {
@@ -285,7 +235,7 @@ fn connect_to_ip(ip: String, node: Node) {
 }
 
 fn main() {
-    let node: Node = Default::default();
+    let node: node::Node = Default::default();
 
     run_server(node.clone());
 
