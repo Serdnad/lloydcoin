@@ -16,6 +16,12 @@ use ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake
 extern crate rand;
 extern crate ed25519_dalek;
 
+use rsa::{RsaPublicKey, RsaPrivateKey};
+use rsa::{pkcs8, hash, padding};
+use rsa::PublicKey;
+
+use sha2::{Sha256, Digest};
+
 mod LC {
     type PublicKey = String;
     use serde::{Deserialize, Serialize};
@@ -39,14 +45,21 @@ mod LC {
         pub sender_id: PublicKey,
         pub amount: u32,
         pub receiver_id: PublicKey,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Clone)]
+    pub struct SignedTransactionData {
+        pub sender_id: PublicKey,
+        pub amount: u32,
+        pub receiver_id: PublicKey,
         pub signature: String,
     }
 }
 
-type PublicKey = u32;
+type PublicKeyNum = u32;
 
 struct Vertebra {
-    balance: (PublicKey, u32)
+    balance: (PublicKeyNum, u32)
 }
 
 type Connections = Arc<Mutex<HashMap<String, Sender>>>;
@@ -153,11 +166,34 @@ impl Server {
         Some(response.to_string())
     }
 
+    fn hash_data(&self, data: LC::SignedTransactionData) -> Vec<u8> {
+        let data_without_sig = json!(LC::TransactionData {
+            sender_id: data.sender_id,
+            amount: data.amount,
+            receiver_id: data.receiver_id
+        }).to_string();
+
+        let mut hasher = Sha256::new();
+        hasher.update(data_without_sig.as_bytes());
+        hasher.finalize().to_vec()
+    }
+
     fn transaction_request(&mut self, transaction: Option<String>) -> Option<String> {
         let data_str = transaction.unwrap();
-        let data: LC::TransactionData = serde_json::from_str(&data_str).unwrap();
+        let data: LC::SignedTransactionData = serde_json::from_str(&data_str).unwrap();
 
-        println!("{:?}", data);
+        let sender_pem = &data.sender_id;
+        let sender_public_key: RsaPublicKey = pkcs8::FromPublicKey::from_public_key_pem(&sender_pem).unwrap();
+
+        let hashed_data = self.hash_data(data.clone());
+
+        let padding = padding::PaddingScheme::new_pkcs1v15_sign(Some(hash::Hash::SHA2_256));
+        let signature = data.signature.as_bytes();
+        use rsa::PublicKey;
+        use rsa::RsaPublicKey;
+        let result = sender_public_key.verify(padding, &hashed_data, signature);
+
+        println!("{:?}", result);
 
         None
     }

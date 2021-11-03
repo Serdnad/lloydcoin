@@ -120,7 +120,7 @@ export default {
 
         let vertebra = createVertebra(amount, receiver, sender)
 
-        let md = forge.md.sha1.create()
+        let md = forge.md.sha256.create()
         md.update(JSON.stringify(vertebra), 'utf8')
         let signature = this.privateKey.sign(md)
 
