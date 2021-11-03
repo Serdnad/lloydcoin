@@ -1,4 +1,3 @@
-type PublicKey = String;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -17,15 +16,15 @@ pub struct Message {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionData {
-    pub sender_id: PublicKey,
+    pub sender_id: String,
     pub amount: u32,
-    pub receiver_id: PublicKey,
+    pub receiver_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SignedTransactionData {
-    pub sender_id: PublicKey,
+    pub sender_id: String,
     pub amount: u32,
-    pub receiver_id: PublicKey,
+    pub receiver_id: String,
     pub signature: String,
 }
