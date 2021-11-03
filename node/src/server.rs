@@ -1,7 +1,5 @@
 use serde_json::{Value, json};
 
-use crate::ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake};
-
 extern crate rand;
 extern crate ed25519_dalek;
 
@@ -14,46 +12,9 @@ use sha2::{Sha256, Digest};
 use crate::node as node;
 use crate::LC as LC;
 
-use std::thread::spawn;
-
-pub fn connect_to_ip(ip: String, node: node::Node) {
-
-    spawn(move || {
-        connect(ip, |socket| {
-            Server {
-                socket: socket,
-                node: node.clone()
-            }
-        }).unwrap()
-    });
-}
-
 pub struct Server {
-    pub socket: Sender,
+    pub socket: ws::Sender,
     pub node: node::Node
-}
-
-impl Handler for Server {
-    fn on_open(&mut self, shake: Handshake) -> Result<()> {
-
-        let ip_addr = shake.remote_addr()?.unwrap();
-        self.node.add_new_connection(&self.socket, ip_addr);
-
-        self.request_nodes();
-
-
-        Ok(())
-    }
-
-    fn on_message(&mut self, msg: ws::Message) -> Result<()> {
-        self.handle_data_received(msg);
-
-        Ok(())
-    }
-
-    fn on_close(&mut self, code: CloseCode, reason: &str) {
-        println!("Client connection closing: {}", reason)
-    }
 }
 
 impl Server {
@@ -172,7 +133,7 @@ impl Server {
         for ip in new_ips {
             if !self.node.contains_ip(&ip) {
                 let url = "ws://".to_owned()+&ip+":9001";
-                connect_to_ip(url, self.node.clone());
+                crate::network::connect_to_ip(url, self.node.clone());
             }
         }
     }
