@@ -15,7 +15,7 @@ fn main() {
 
     network::run_server(node.clone());
 
-    let GOD: String = "ws://10.8.57.232:9001".to_string();
+    let GOD: String = "ws://192.168.80.1:9001".to_string();
     network::connect_to_ip(GOD, node.clone());
 
     loop {

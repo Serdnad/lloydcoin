@@ -13,13 +13,14 @@ type Snake = Arc<Mutex<LinkedList<Vertebra>>>;
 
 pub struct Node {
     pub connections: Connections,
-    //snake: Snake
+    pub snake: Snake
 }
 
 impl Clone for Node {
     fn clone(&self) -> Self {
         Node {
-            connections: Arc::clone(&self.connections)
+            connections: Arc::clone(&self.connections),
+            snake: Arc::new(Mutex::new(Default::default()))
         }
     }
 }
@@ -27,7 +28,8 @@ impl Clone for Node {
 impl Default for Node {
     fn default() -> Self {
         Node {
-            connections: Arc::new(Mutex::new(HashMap::new()))
+            connections: Arc::new(Mutex::new(HashMap::new())),
+            snake: Arc::new(Mutex::new(Default::default()))
         }
     }
 }

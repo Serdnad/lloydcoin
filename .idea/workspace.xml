@@ -23,19 +23,16 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
     </configurations>
   </component>
   <component name="CargoProjects">
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/node/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7139109a-0353-4e7a-aa96-11cee1b00d71" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/node.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,44 +62,48 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="cf.first.check.clang-format" value="false" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/node" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="language.rust" />
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-      <option name="channel" value="DEFAULT" />
       <option name="command" value="run --package lloydcoin --bin lloydcoin" />
-      <option name="allFeatures" value="false" />
-      <option name="emulateTerminal" value="false" />
-      <option name="backtrace" value="SHORT" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <envs />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="channel" value="DEFAULT" />
-      <option name="command" value="run" />
+      <option name="requiredFeatures" value="true" />
       <option name="allFeatures" value="false" />
       <option name="emulateTerminal" value="false" />
+      <option name="withSudo" value="false" />
       <option name="backtrace" value="SHORT" />
       <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
       <method v="2">
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="NimRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="nim.task.build.to.cache" enabled="true" />
       </method>
     </configuration>
   </component>
   <component name="RustProjectSettings">
-    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+    <option name="toolchainHomeDirectory" value="/usr/bin" />
+    <option name="version" value="2" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -113,6 +114,7 @@
       <option name="presentableId" value="Default" />
       <updated>1634790442611</updated>
       <workItem from="1634790444100" duration="9698000" />
+      <workItem from="1638812585549" duration="457000" />
     </task>
     <servers />
   </component>
@@ -129,27 +131,10 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
-  <component name="WindowStateProjectService">
-    <state width="1398" height="204" key="GridCell.Tab.0.bottom" timestamp="1634805053450">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state width="1398" height="204" key="GridCell.Tab.0.bottom/0.25.1440.875@0.25.1440.875" timestamp="1634805053450" />
-    <state width="1398" height="204" key="GridCell.Tab.0.center" timestamp="1634805053449">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state width="1398" height="204" key="GridCell.Tab.0.center/0.25.1440.875@0.25.1440.875" timestamp="1634805053449" />
-    <state width="1398" height="204" key="GridCell.Tab.0.left" timestamp="1634805053449">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state width="1398" height="204" key="GridCell.Tab.0.left/0.25.1440.875@0.25.1440.875" timestamp="1634805053449" />
-    <state width="1398" height="204" key="GridCell.Tab.0.right" timestamp="1634805053449">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state width="1398" height="204" key="GridCell.Tab.0.right/0.25.1440.875@0.25.1440.875" timestamp="1634805053449" />
-    <state x="422" y="172" width="596" height="580" key="find.popup" timestamp="1634803201933">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state x="422" y="172" width="596" height="580" key="find.popup/0.25.1440.875@0.25.1440.875" timestamp="1634803201933" />
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

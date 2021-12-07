@@ -1,15 +1,12 @@
 use serde_json::{Value, json};
 
-extern crate rand;
-extern crate ed25519_dalek;
-
 use crate::node as node;
 use crate::LC as LC;
 use crate::transaction as transaction;
 
 pub struct Server {
     pub socket: ws::Sender,
-    pub node: node::Node
+    pub node: node::Node,
 }
 
 impl Server {
@@ -29,10 +26,14 @@ impl Server {
             Some(action) => {
                 match &*action {
                     "get_nodes" => self.get_nodes_request(),
-                    "transaction" => transaction::transaction_request(request.data),
-                    _ => None
+                    "transaction" => {
+                        let Ok(tx) = transaction::transaction_request(request.data);
+
+                        None
+                    }
+                    _ => None,
                 }
-            },
+            }
             _ => None
         }
     }
@@ -44,10 +45,10 @@ impl Server {
                     "get_nodes" => {
                         self.get_nodes_response(response.data);
                         None
-                    },
+                    }
                     _ => None
                 }
-            },
+            }
             _ => None
         }
     }
@@ -60,5 +61,4 @@ impl Server {
             LC::MessageType::Response => self.handle_response(parsed)
         }
     }
-
 }

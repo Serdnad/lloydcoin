@@ -16,15 +16,15 @@ pub struct Message {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionData {
-    pub sender_id: String,
+    pub sender_key: String,
     pub amount: u32,
-    pub receiver_id: String,
+    pub receiver_key: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SignedTransactionData {
-    pub sender_id: String,
+    pub sender_key: String,
     pub amount: u32,
-    pub receiver_id: String,
+    pub receiver_key: String,
     pub signature: String,
 }

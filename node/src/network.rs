@@ -4,27 +4,25 @@ use crate::node as node;
 use crate::server as server;
 
 pub fn run_server(node: node::Node) {
-
     let localhost = "0.0.0.0:9001";
 
-    spawn(move || listen(localhost, 
-        |socket| {
-            server::Server {
-                socket: socket,
-                node: node.clone()
-            }
-        }).unwrap()
+    spawn(move || listen(localhost,
+                         |socket| {
+                             server::Server {
+                                 socket: socket,
+                                 node: node.clone(),
+                             }
+                         }).unwrap()
     );
     println!("Running server!");
 }
 
 pub fn connect_to_ip(ip: String, node: node::Node) {
-
     spawn(move || {
         connect(ip, |socket| {
             server::Server {
                 socket: socket,
-                node: node.clone()
+                node: node.clone(),
             }
         }).unwrap()
     });
@@ -33,7 +31,6 @@ pub fn connect_to_ip(ip: String, node: node::Node) {
 
 impl Handler for server::Server {
     fn on_open(&mut self, shake: Handshake) -> Result<()> {
-
         let ip_addr = shake.remote_addr()?.unwrap();
         self.node.add_new_connection(&self.socket, ip_addr);
 
