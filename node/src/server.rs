@@ -82,27 +82,8 @@ impl Server {
             "get_nodes" => Ok(self.handle_get_nodes_request()),
             "get_block" => handlers::get_block(&self.node, &request),
             "transaction" => {
-                let tx: SignedTransaction = serde_json::from_str(&request.data.unwrap()).unwrap();
-
-                println!("Move {} from {} to {}", tx.data.amount, tx.data.sender_key, tx.data.receiver_key);
-
-                let block = Block {
-                    tx,
-                    prev_hash: self.node.chain.back().unwrap().clone(),
-                };
-
-
-                let block_hash = block.hash();
-                self.node.blocks.insert(block_hash.clone(), block);
-                self.node.chain.push_back(block_hash);
-
-                println!("{:?}", self.node.chain);
-                println!("{:?}", self.node.blocks);
-                // self.node.blocks.entry(block_hash).insert(block);
-                // self.node.chain.push_back(block_hash);
-                // let tx = transaction::transaction_request(request.data).unwrap();
-
-                Ok((String::from("dope dope")))
+                let data = &request.data.unwrap();
+                handlers::add_transaction(&mut self.node, data.to_string())
             }
             _ => Ok(String::from("unsupported request")),
         }
