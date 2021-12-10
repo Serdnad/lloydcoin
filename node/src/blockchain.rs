@@ -1,4 +1,4 @@
-mod balance_manager;
+pub mod balance_manager;
 
 use std::collections::{HashMap, LinkedList};
 

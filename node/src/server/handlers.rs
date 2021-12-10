@@ -4,7 +4,7 @@ use crate::blockchain::Block;
 use crate::LC::{Message, MessageType};
 use crate::{LC, Node};
 use crate::server::Server;
-use crate::transaction::SignedTransaction;
+use crate::transaction::{SignedTransaction, validate_transaction};
 
 pub fn get_block(node: &Node, request: &Message) -> Result<String, String> {
     match &request.data {
@@ -28,6 +28,14 @@ pub fn add_transaction(node: &mut Node, data: String) -> Result<String, String> 
     let tx: SignedTransaction = serde_json::from_str(&data).unwrap();
 
     println!("Move {} from {} to {}", tx.data.amount, tx.data.sender_key, tx.data.receiver_key);
+
+    if let Err(a) = validate_transaction(&tx) {
+        return Err(a.to_string());
+    }
+
+    //if let Err(a) = node. &node) {
+        //return Err(a.to_string());
+    //}
 
     let block = Block {
         tx,

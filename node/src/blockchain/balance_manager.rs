@@ -3,8 +3,8 @@ use crate::transaction::TransactionData;
 
 type Balance = u64;
 
-struct BalanceManager {
-    accounts: HashMap<String, Balance>,
+pub struct BalanceManager {
+    pub accounts: HashMap<String, Balance>,
 }
 
 impl BalanceManager {
@@ -26,6 +26,14 @@ impl BalanceManager {
             self.accounts.insert(tx.receiver_key, recipient_balance + tx.amount);
 
             Ok(())
+        }
+    }
+}
+
+impl Default for BalanceManager {
+    fn default() -> Self {
+        BalanceManager {
+            accounts: HashMap::new()
         }
     }
 }
