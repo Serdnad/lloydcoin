@@ -79,7 +79,7 @@ function submitTransaction() {
     broadcast(tx)
 }
 
-const URL = "ws://192.168.80.1:9001"
+const URL = "ws://10.8.4.155:9001"
 let connections: WebSocket[] = []
 function initWebsocket() {
     let socket = new WebSocket(URL)

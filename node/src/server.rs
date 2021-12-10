@@ -22,30 +22,18 @@ pub struct Server {
 
 impl Server {
     pub fn handle_data_received(&mut self, msg: ws::Message) {
-        // let response: Result<String, &str> = match msg {
-        //     ws::Message::Text(s) => self.handle_message(s),
-        //     _ => Ok(String::from("huh"))
-        // };
-
-        if !msg.is_text() {
-            return;
-        }
-
-        let msg = msg.into_text().unwrap();
-        println!("{}", msg);
-
         let socket = &self.socket.clone();
 
-        let res = self.handle_message(msg);
+        let response = match msg {
+            ws::Message::Text(msg) => self.handle_message(msg),
+            _ => Err(String::from("message type not supported"))
+        };
 
-        if res.is_ok() {
-            socket.send(res.unwrap());
+        if response.is_ok() {
+            socket.send(response.unwrap());
+        } else {
+            println!("{}", response.err().unwrap());
         }
-
-
-        // if response.is_ok() {
-        //     self.socket.send(response.unwrap());
-        // }
     }
 
     /// Determine whether a message received by this node is a new request, or a response to a
