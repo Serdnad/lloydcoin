@@ -57,7 +57,7 @@ pub fn transaction_request(transaction: Option<String>) -> Result<SignedTransact
 /// - The private key used to sign the transaction (signature) matches the public key in sender_key.
 ///
 /// Note: `signature` must be a ECDSA/secp256k1 signature (ASN.1 DER encoded) in hex format.
-fn validate_transaction(transaction: &SignedTransaction) -> Result<(), &str> {
+pub fn validate_transaction(transaction: &SignedTransaction) -> Result<(), &str> {
     let signature_bytes = hex::decode(&transaction.signature).unwrap();
     let der_signature = k256::ecdsa::DerSignature::from_bytes(signature_bytes.as_slice()).unwrap();
     let signature = k256::ecdsa::Signature::from_der(der_signature.as_bytes()).unwrap();

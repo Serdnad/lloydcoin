@@ -4,7 +4,7 @@ use crate::blockchain::Block;
 use crate::LC::{Message, MessageType};
 use crate::{LC, Node};
 use crate::server::Server;
-use crate::transaction::SignedTransaction;
+use crate::transaction::{SignedTransaction, validate_transaction};
 
 /// Handle a request for an account's balance.
 pub fn get_balance(node: &Node, request: &Message) -> Result<String, String> {
@@ -45,6 +45,15 @@ pub fn add_transaction(node: &mut Node, data: String) -> Result<String, String> 
     let tx: SignedTransaction = serde_json::from_str(&data).unwrap();
 
     println!("Move {} from {} to {}", tx.data.amount, tx.data.sender_key, tx.data.receiver_key);
+
+    if let Err(a) = validate_transaction(&tx) {
+        return Err(a.to_string());
+    }
+
+    // if let Err(err) = node.balance_manager.lock().unwrap()
+    // if let Err(a) = node. &node) {
+    //     return Err(a.to_string());
+    // }
 
     let prev_hash = node.chain.back().unwrap().clone();
     let block = Block { tx, prev_hash };

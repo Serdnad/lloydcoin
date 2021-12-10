@@ -3,6 +3,7 @@ use ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake
 use std::collections::LinkedList;
 use std::collections::HashMap;
 use crate::blockchain::{BlockChain, BlockMap};
+use crate::blockchain::balance_manager::BalanceManager;
 
 type PublicKeyNum = u32;
 
@@ -11,22 +12,23 @@ pub struct Vertebra {
 }
 
 type Connections = Arc<Mutex<HashMap<String, Sender>>>;
-type Snake = Arc<Mutex<LinkedList<Vertebra>>>;
+//type ThreadSafe<T> = Arc<Mutex<T>>;
 
 pub struct Node {
     pub connections: Connections,
-    pub snake: Snake,
     pub chain: BlockChain,
     pub blocks: BlockMap,
+   // pub balance_manager: ThreadSafe<BalanceManager>
+    pub balance_manager: Arc<Mutex<BalanceManager>>
 }
 
 impl Clone for Node {
     fn clone(&self) -> Self {
         Node {
             connections: Arc::clone(&self.connections),
-            snake: Arc::new(Mutex::new(Default::default())),
             chain: self.chain.clone(),
             blocks: Default::default(),
+            balance_manager: Arc::clone(&self.balance_manager)
         }
     }
 }
@@ -35,9 +37,9 @@ impl Default for Node {
     fn default() -> Self {
         Node {
             connections: Arc::new(Mutex::new(HashMap::new())),
-            snake: Arc::new(Mutex::new(Default::default())),
             chain: Default::default(),
             blocks: Default::default(),
+            balance_manager: Arc::new(Mutex::new(Default::default()))
         }
     }
 }
