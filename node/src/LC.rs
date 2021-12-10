@@ -3,6 +3,8 @@ use serde_json::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum MessageType {
+    Ping,
+    Pong,
     Request,
     Response,
 }
@@ -14,12 +16,18 @@ pub struct Message {
     pub data: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TransactionData {
-    pub sender_key: String,
-    pub amount: u32,
-    pub receiver_key: String,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct SignedTransaction {
+//     pub data: TransactionData,
+//     pub signature: String,
+// }
+//
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct TransactionData {
+//     pub sender_key: String,
+//     pub amount: u32,
+//     pub receiver_key: String,
+// }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SignedTransactionData {

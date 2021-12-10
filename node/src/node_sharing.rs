@@ -12,7 +12,7 @@ impl Server {
         self.socket.send(request.to_string());
     }
 
-    pub fn get_nodes_request(&mut self) -> Option<String> {
+    pub fn handle_get_nodes_request(&mut self) -> String {
         let connections = self.node.get_connections();
         let resp_data = json!(connections.into_iter().collect::<Vec<String>>());
 
@@ -22,10 +22,10 @@ impl Server {
             data: Some(resp_data.to_string())
         });
         
-        Some(response.to_string())
+        response.to_string()
     }
 
-    pub fn get_nodes_response(&mut self, data: Option<String>) {
+    pub fn handle_get_nodes_response(&mut self, data: Option<String>) {
         if data.is_some() {
             let str_vec = data.unwrap();
             println!("{:?}", str_vec);
