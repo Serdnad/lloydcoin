@@ -1,9 +1,10 @@
 use std::sync::{Mutex, Arc};
-use ws::{connect, listen, CloseCode, Handler, Message, Result, Sender, Handshake};
+use ws::{connect, listen, CloseCode, Handler, Message, Sender, Handshake};
 use std::collections::LinkedList;
 use std::collections::HashMap;
 use crate::blockchain::{BlockChain, BlockMap};
 use crate::blockchain::balance_manager::BalanceManager;
+use crate::transaction::TransactionData;
 
 type PublicKeyNum = u32;
 
@@ -58,5 +59,10 @@ impl Node {
     pub fn contains_ip(&mut self, ip: &str) -> bool {
         let mut map = self.connections.lock().unwrap();
         map.contains_key(ip)
+    }
+
+    pub fn balance_manager_process_tx(&mut self, tx: &TransactionData) -> Result<(), &str> {
+        let mut balance_manager = self.balance_manager.lock().unwrap();
+        balance_manager.process_transaction(tx)
     }
 }

@@ -50,10 +50,9 @@ pub fn add_transaction(node: &mut Node, data: String) -> Result<String, String> 
         return Err(a.to_string());
     }
 
-    // if let Err(err) = node.balance_manager.lock().unwrap()
-    // if let Err(a) = node. &node) {
-    //     return Err(a.to_string());
-    // }
+    if let Err(a) = node.balance_manager_process_tx(&tx.data) {
+         return Err(a.to_string());
+    }
 
     let prev_hash = node.chain.back().unwrap().clone();
     let block = Block { tx, prev_hash };

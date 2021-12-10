@@ -15,15 +15,15 @@ impl BalanceManager {
 
     /// Verify that all current balances allow the given transaction to be executed, and update
     /// balances accordingly if so.
-    pub fn process_transaction(&mut self, tx: TransactionData) -> Result<(), &str> {
+    pub fn process_transaction(&mut self, tx: &TransactionData) -> Result<(), &str> {
         let sender_balance = self.get_balance(&tx.sender_key);
         let recipient_balance = self.get_balance(&tx.receiver_key);
 
         if tx.amount > sender_balance {
             Err("insufficient funds")
         } else {
-            self.accounts.insert(tx.sender_key, sender_balance - tx.amount);
-            self.accounts.insert(tx.receiver_key, recipient_balance + tx.amount);
+            self.accounts.insert(tx.sender_key.clone(), sender_balance - tx.amount);
+            self.accounts.insert(tx.receiver_key.clone(), recipient_balance + tx.amount);
 
             Ok(())
         }
