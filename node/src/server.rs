@@ -69,6 +69,7 @@ impl Server {
         match request.action.as_ref().unwrap().as_ref() {
             "get_nodes" => Ok(self.handle_get_nodes_request()),
             "get_block" => handlers::get_block(&self.node, &request),
+            "get_balance" => handlers::get_balance(&self.node, &request),
             "transaction" => {
                 let data = &request.data.unwrap();
                 handlers::add_transaction(&mut self.node, data.to_string())
