@@ -25,8 +25,6 @@ impl Block {
     }
 }
 
-struct Vertebra {}
-
 pub type BlockMap = HashMap<String, Block>;
 
 pub type BlockChain = LinkedList<String>;

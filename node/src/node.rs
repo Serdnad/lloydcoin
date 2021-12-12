@@ -6,21 +6,13 @@ use crate::blockchain::{BlockChain, BlockMap};
 use crate::blockchain::balance_manager::BalanceManager;
 use crate::transaction::TransactionData;
 
-type PublicKeyNum = u32;
-
-pub struct Vertebra {
-    balance: (PublicKeyNum, u32),
-}
-
 type Connections = Arc<Mutex<HashMap<String, Sender>>>;
-//type ThreadSafe<T> = Arc<Mutex<T>>;
 
 pub struct Node {
     pub connections: Connections,
     pub chain: BlockChain,
     pub blocks: BlockMap,
-   // pub balance_manager: ThreadSafe<BalanceManager>
-    pub balance_manager: Arc<Mutex<BalanceManager>>
+    pub balance_manager: BalanceManager
 }
 
 impl Clone for Node {
@@ -29,7 +21,7 @@ impl Clone for Node {
             connections: Arc::clone(&self.connections),
             chain: self.chain.clone(),
             blocks: Default::default(),
-            balance_manager: Arc::clone(&self.balance_manager)
+            balance_manager: self.balance_manager.clone()
         }
     }
 }
@@ -40,7 +32,7 @@ impl Default for Node {
             connections: Arc::new(Mutex::new(HashMap::new())),
             chain: Default::default(),
             blocks: Default::default(),
-            balance_manager: Arc::new(Mutex::new(Default::default()))
+            balance_manager: Default::default()
         }
     }
 }
@@ -59,10 +51,5 @@ impl Node {
     pub fn contains_ip(&mut self, ip: &str) -> bool {
         let mut map = self.connections.lock().unwrap();
         map.contains_key(ip)
-    }
-
-    pub fn balance_manager_process_tx(&mut self, tx: &TransactionData) -> Result<(), &str> {
-        let mut balance_manager = self.balance_manager.lock().unwrap();
-        balance_manager.process_transaction(tx)
     }
 }

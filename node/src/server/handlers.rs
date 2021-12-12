@@ -50,7 +50,7 @@ pub fn add_transaction(node: &mut Node, data: String) -> Result<String, String> 
         return Err(a.to_string());
     }
 
-    if let Err(a) = node.balance_manager_process_tx(&tx.data) {
+    if let Err(a) = node.balance_manager.process_transaction(&tx.data) {
          return Err(a.to_string());
     }
 
