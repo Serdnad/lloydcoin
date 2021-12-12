@@ -1,4 +1,5 @@
 pub mod balance_manager;
+pub mod blockchain;
 
 use std::collections::{HashMap, LinkedList};
 
@@ -26,6 +27,4 @@ impl Block {
 }
 
 pub type BlockMap = HashMap<String, Block>;
-
-pub type BlockChain = LinkedList<String>;
 

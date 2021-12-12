@@ -2,8 +2,9 @@ use std::sync::{Mutex, Arc};
 use ws::{connect, listen, CloseCode, Handler, Message, Sender, Handshake};
 use std::collections::LinkedList;
 use std::collections::HashMap;
-use crate::blockchain::{BlockChain, BlockMap};
+use crate::blockchain::{BlockMap};
 use crate::blockchain::balance_manager::BalanceManager;
+use crate::blockchain::blockchain::{BlockChain};
 use crate::transaction::TransactionData;
 
 type Connections = Arc<Mutex<HashMap<String, Sender>>>;
