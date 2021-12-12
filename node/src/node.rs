@@ -2,7 +2,7 @@ use std::sync::{Mutex, Arc};
 use ws::{connect, listen, CloseCode, Handler, Message, Sender, Handshake};
 use std::collections::LinkedList;
 use std::collections::HashMap;
-use crate::blockchain::{BlockMap};
+use crate::blockchain::blockmap::{BlockMap};
 use crate::blockchain::balance_manager::BalanceManager;
 use crate::blockchain::blockchain::{BlockChain};
 use crate::transaction::TransactionData;
@@ -21,7 +21,7 @@ impl Clone for Node {
         Node {
             connections: Arc::clone(&self.connections),
             chain: self.chain.clone(),
-            blocks: Default::default(),
+            blocks: self.blocks.clone(),
             balance_manager: self.balance_manager.clone()
         }
     }

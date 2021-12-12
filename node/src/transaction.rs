@@ -16,7 +16,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 /// A signed LC transaction, the most atomic unit included in the blockchain.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SignedTransaction {
     pub data: TransactionData,
     pub signature: String,
@@ -25,7 +25,7 @@ pub struct SignedTransaction {
 /// The data describing a transfer of LloydCoin.
 ///
 /// TransactionData is only useful with a signature signed by the sender. See [SignedTransaction].
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TransactionData {
     pub sender_key: String,
     pub amount: u64,

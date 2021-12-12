@@ -4,7 +4,7 @@ use std::hash::Hash;
 use serde_json::{json, Value};
 use url::form_urlencoded::parse;
 
-use crate::blockchain::Block;
+use crate::blockchain::block::Block;
 use crate::LC as LC;
 use crate::LC::MessageType;
 use crate::LC::MessageType::Response;

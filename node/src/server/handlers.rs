@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::blockchain::Block;
+use crate::blockchain::block::Block;
 use crate::LC::{Message, MessageType};
 use crate::{LC, Node};
 use crate::server::Server;
