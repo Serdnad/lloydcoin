@@ -4,9 +4,11 @@
 
         <button @click="generateWallet">Generate Wallet</button>
 
-        <div>
-            <p>Public Key: {{ wallet?.getPublicKey() }}</p>
-            <p>Private Key: {{ wallet?.getPrivateKey() }}</p>
+        <div class="form keys">
+            <label for="public">Public Key:</label>
+            <input id="public" v-model="publicKey" />
+            <label for="private">Private Key:</label>
+            <input id="private" v-model="privateKey" />
         </div>
 
         <hr />
@@ -36,7 +38,9 @@ import Wallet from "./lib/wallet"
 import { Block, Transaction, TransactionData } from "./lib/lloydcoin"
 import BlockDetails from "./components/BlockDetails.vue"
 
-let wallet: Ref<Wallet> = ref()
+let privateKey = ref()
+let publicKey = ref()
+let wallet = ref()
 
 let receiver = ref("")
 let amount = ref("")
@@ -45,7 +49,9 @@ let blockHash = ref("")
 let block = ref({} as Block)
 
 function generateWallet() {
-    wallet.value = new Wallet()
+    wallet.value = new Wallet(privateKey.value)
+    privateKey.value = wallet.value.getPrivateKey()
+    publicKey.value = wallet.value.getPublicKey()
 }
 
 function getBlock() {
@@ -137,6 +143,22 @@ initWebsocket()
 </script>
 
 <style lang="scss">
+
+@mixin center-content() {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.keys {
+    @include center-content();
+    flex-direction: column;
+
+    input {
+        width: 35rem;
+        text-align: center;
+    }
+}
 #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;

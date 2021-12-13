@@ -5,8 +5,14 @@ const EC = new ec("secp256k1")
 class Wallet {
     keyPair: ec.KeyPair
 
-    constructor() {
-        this.keyPair = EC.genKeyPair()
+    constructor(privateKey) {
+        console.log(privateKey)
+        if(privateKey == undefined) {
+            this.keyPair = EC.genKeyPair()
+        }
+        else {
+            this.keyPair = EC.keyFromPrivate(privateKey)
+        }
     }
 
     getPublicKey = () => this.keyPair.getPublic(true, "hex")
