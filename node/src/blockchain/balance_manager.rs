@@ -36,9 +36,13 @@ impl BalanceManager {
 
 impl Default for BalanceManager {
     fn default() -> Self {
-        BalanceManager {
+        let new = BalanceManager {
             accounts_mutex: Arc::new(Mutex::new(HashMap::new()))
-        }
+        };
+        new.accounts_mutex.lock().unwrap().insert(
+            "02eed7e3ce21528429310300046cd3d41434bcaac7c78bb930735c7913b52eb79d".to_string(), 
+            500);
+        new
     }
 }
 
