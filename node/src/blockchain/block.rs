@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use sha3::{Digest, Sha3_256};
 
 use crate::transaction::SignedTransaction;
@@ -10,6 +10,7 @@ type Hash = String;
 pub struct Block {
     pub prev_hash: Hash,
     pub tx: SignedTransaction,
+    pub nonce: u64,
 }
 
 impl Block {
