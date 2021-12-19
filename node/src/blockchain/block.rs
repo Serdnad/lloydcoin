@@ -21,3 +21,13 @@ impl Block {
         hex::encode(digest.finalize().as_slice())
     }
 }
+
+impl Clone for Block {
+    fn clone(&self) -> Self {
+        Block {
+            prev_hash: self.prev_hash.clone(),
+            tx: self.tx.clone(),
+            nonce: self.nonce.clone(),
+        }
+    }
+}
