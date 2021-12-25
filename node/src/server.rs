@@ -56,7 +56,7 @@ impl Server {
             "get_balance" => handlers::get_balance(&self.node, &request),
             "transaction" => {
                 let data = &request.data.unwrap();
-                handlers::add_transaction(&mut self.node, data.to_string())
+                handlers::validate_and_mine_transaction(&mut self.node, data.to_string())
             }
             _ => Ok(Some(String::from("unsupported request"))),
         }

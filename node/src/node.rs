@@ -1,7 +1,11 @@
 use crate::blockchain::balance_manager::BalanceManager;
+use crate::blockchain::block::Block;
 use crate::blockchain::blockchain::BlockChain;
 use crate::blockchain::blockmap::BlockMap;
+use crate::transaction::SignedTransaction;
+use serde_json::json;
 use std::collections::HashMap;
+use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use ws::Sender;
 
@@ -12,6 +16,7 @@ pub struct Node {
     pub chain: BlockChain,
     pub blocks: BlockMap,
     pub balance_manager: BalanceManager,
+    pub worker_tx: mpsc::Sender<(SignedTransaction, String)>,
 }
 
 impl Clone for Node {
@@ -21,17 +26,19 @@ impl Clone for Node {
             chain: self.chain.clone(),
             blocks: self.blocks.clone(),
             balance_manager: self.balance_manager.clone(),
+            worker_tx: self.worker_tx.clone(),
         }
     }
 }
 
-impl Default for Node {
-    fn default() -> Self {
+impl Node {
+    pub fn create(tx: mpsc::Sender<(SignedTransaction, String)>) -> Self {
         Node {
             connections: Arc::new(Mutex::new(HashMap::new())),
             chain: Default::default(),
             blocks: Default::default(),
             balance_manager: Default::default(),
+            worker_tx: tx,
         }
     }
 }
@@ -57,5 +64,14 @@ impl Node {
     pub fn contains_ip(&mut self, ip: &str) -> bool {
         let map = self.connections.lock().unwrap();
         map.contains_key(ip)
+    }
+
+    pub fn add_and_broadcast_block(&mut self, block: Block) {
+        let block_hash = block.hash();
+        println!("Adding block: {}", block_hash);
+        self.blocks.insert(block_hash.clone(), block.clone());
+        self.chain.push_back(block_hash);
+
+        self.broadcast(json!(block).to_string());
     }
 }

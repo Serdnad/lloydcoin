@@ -45,40 +45,11 @@ pub fn get_block(node: &Node, request: &Message) -> Result<Option<String>, Strin
     }
 }
 
-fn do_work(tx: SignedTransaction, prev_hash: String) -> Block {
-    let threshold: [u8; 32] = [
-        0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff,
-    ];
-
-    let mut rng = rand::thread_rng();
-
-    loop {
-        let nonce: u64 = rng.gen();
-        let block = Block {
-            tx: tx.clone(),
-            prev_hash: prev_hash.clone(),
-            nonce,
-        };
-
-        let hash = hex::decode(block.hash()).unwrap();
-
-        let mut less_than = true;
-        for (i, elem) in hash.iter().enumerate() {
-            if elem > &threshold[i] {
-                less_than = false;
-                break;
-            }
-        }
-        if less_than {
-            return block;
-        }
-    }
-}
-
 /// Validate a transaction and submit it to the network if valid.
-pub fn add_transaction(node: &mut Node, data: String) -> Result<Option<String>, String> {
+pub fn validate_and_mine_transaction(
+    node: &mut Node,
+    data: String,
+) -> Result<Option<String>, String> {
     let tx: SignedTransaction = serde_json::from_str(&data).unwrap();
 
     println!(
@@ -90,21 +61,25 @@ pub fn add_transaction(node: &mut Node, data: String) -> Result<Option<String>, 
         return Err(a.to_string());
     }
 
+    println!("Valid signature");
+
     if let Err(a) = node.balance_manager.process_transaction(&tx.data) {
         return Err(a.to_string());
     }
 
+    println!("Valid amount");
+
     let prev_hash = node.chain.back().unwrap().clone();
-    let block = do_work(tx, prev_hash);
+    let block = node.worker_tx.send((tx, prev_hash));
 
-    let block_hash = block.hash();
-    node.blocks.insert(block_hash.clone(), block.clone());
-    node.chain.push_back(block_hash);
+    //let block_hash = block.hash();
+    //node.blocks.insert(block_hash.clone(), block.clone());
+    //node.chain.push_back(block_hash);
 
-    println!("{:?}", node.chain);
-    println!("{:?}", node.blocks);
+    //println!("{:?}", node.chain);
+    //println!("{:?}", node.blocks);
 
-    node.broadcast(json!(block).to_string());
+    //node.broadcast(json!(block).to_string());
 
     Ok(None)
 }
