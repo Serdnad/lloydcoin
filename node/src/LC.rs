@@ -3,10 +3,9 @@ use serde_json::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum MessageType {
-    Ping,
-    Pong,
     Request,
     Response,
+    CreatedBlock,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

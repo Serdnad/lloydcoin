@@ -1,4 +1,4 @@
-use crate::blockchain::block::Block;
+use crate::blockchain::block::{validate_proof_of_work, Block};
 use crate::transaction::{validate_transaction, SignedTransaction};
 use crate::Node;
 use crate::LC::{Message, MessageType};
@@ -45,6 +45,28 @@ pub fn get_block(node: &Node, request: &Message) -> Result<Option<String>, Strin
     }
 }
 
+pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<String>, String> {
+    let block: Block = serde_json::from_str(&data).unwrap();
+
+    if let Err(a) = validate_proof_of_work(&block, node.threshold) {
+        return Err(a.to_string());
+    }
+
+    if block.prev_hash != node.chain.back().unwrap() {
+        return Err("Invalid prev_hash on received block".to_string());
+    }
+
+    if let Err(a) = validate_transaction(&block.tx) {
+        return Err(a.to_string());
+    }
+
+    println!("Valid block received!");
+
+    node.add_block(block);
+
+    Ok(None)
+}
+
 /// Validate a transaction and submit it to the network if valid.
 pub fn validate_and_mine_transaction(
     node: &mut Node,
@@ -70,16 +92,7 @@ pub fn validate_and_mine_transaction(
     println!("Valid amount");
 
     let prev_hash = node.chain.back().unwrap().clone();
-    let block = node.worker_tx.send((tx, prev_hash));
-
-    //let block_hash = block.hash();
-    //node.blocks.insert(block_hash.clone(), block.clone());
-    //node.chain.push_back(block_hash);
-
-    //println!("{:?}", node.chain);
-    //println!("{:?}", node.blocks);
-
-    //node.broadcast(json!(block).to_string());
+    node.worker_tx.send((tx, prev_hash));
 
     Ok(None)
 }

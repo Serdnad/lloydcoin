@@ -10,18 +10,7 @@ type InfoTransmitter = mpsc::Sender<(SignedTransaction, String)>;
 type BlockTransmitter = mpsc::Sender<Block>;
 type Receiver = mpsc::Receiver<(SignedTransaction, String)>;
 
-fn try_nonce(
-    tx: SignedTransaction,
-    prev_hash: String,
-    nonce: u64,
-    threshold: [u8; 32],
-) -> Option<Block> {
-    let block = Block {
-        tx: tx.clone(),
-        prev_hash: prev_hash.clone(),
-        nonce,
-    };
-
+pub fn does_nonce_work(block: &Block, threshold: [u8; 32]) -> bool {
     let hash = hex::decode(block.hash()).unwrap();
 
     let mut less_than = true;
@@ -32,20 +21,14 @@ fn try_nonce(
         }
     }
     if less_than {
-        return Some(block);
+        return true;
     } else {
-        return None;
+        return false;
     }
 }
 
-fn do_work(node_tx: BlockTransmitter, rx: Receiver) {
+fn do_work(node_tx: BlockTransmitter, rx: Receiver, threshold: [u8; 32]) {
     let mut rng = rand::thread_rng();
-
-    let threshold: [u8; 32] = [
-        0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff,
-    ];
 
     loop {
         let (transaction, prev_hash) = rx.recv().unwrap();
@@ -53,9 +36,13 @@ fn do_work(node_tx: BlockTransmitter, rx: Receiver) {
         loop {
             let nonce: u64 = rng.gen();
 
-            let maybe_block = try_nonce(transaction.clone(), prev_hash.clone(), nonce, threshold);
+            let block = Block {
+                tx: transaction.clone(),
+                prev_hash: prev_hash.clone(),
+                nonce,
+            };
 
-            if let Some(block) = maybe_block {
+            if does_nonce_work(&block, threshold) {
                 node_tx.send(block);
 
                 println!("Nonce found");
@@ -68,11 +55,11 @@ fn do_work(node_tx: BlockTransmitter, rx: Receiver) {
     }
 }
 
-pub fn create_worker(node_tx: BlockTransmitter) -> InfoTransmitter {
+pub fn create_worker(node_tx: BlockTransmitter, threshold: [u8; 32]) -> InfoTransmitter {
     let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
-        do_work(node_tx, rx);
+        do_work(node_tx, rx, threshold);
     });
 
     tx

@@ -40,6 +40,9 @@ impl Server {
         match parsed.typ {
             LC::MessageType::Request => self.handle_request(parsed),
             LC::MessageType::Response => self.handle_response(parsed),
+            LC::MessageType::CreatedBlock => {
+                handlers::validate_and_add_block(&mut self.node, parsed.data.unwrap())
+            }
             _ => Ok(Some(String::from("Unsupported type"))),
         }
     }

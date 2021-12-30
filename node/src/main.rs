@@ -17,11 +17,17 @@ mod transaction;
 mod worker;
 
 fn main() {
+    let threshold: [u8; 32] = [
+        0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff,
+    ];
+
     let (tx, rx) = mpsc::channel();
 
-    let worker_tx = worker::create_worker(tx);
+    let worker_tx = worker::create_worker(tx, threshold);
 
-    let mut node: node::Node = Node::create(worker_tx);
+    let mut node: node::Node = Node::create(worker_tx, threshold);
     node.chain.push_back(String::from("GENESIS"));
 
     network::run_server(node.clone());

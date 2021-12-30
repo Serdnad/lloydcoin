@@ -3,6 +3,7 @@ use crate::blockchain::block::Block;
 use crate::blockchain::blockchain::BlockChain;
 use crate::blockchain::blockmap::BlockMap;
 use crate::transaction::SignedTransaction;
+use crate::LC;
 use serde_json::json;
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -17,6 +18,7 @@ pub struct Node {
     pub blocks: BlockMap,
     pub balance_manager: BalanceManager,
     pub worker_tx: mpsc::Sender<(SignedTransaction, String)>,
+    pub threshold: [u8; 32],
 }
 
 impl Clone for Node {
@@ -27,18 +29,20 @@ impl Clone for Node {
             blocks: self.blocks.clone(),
             balance_manager: self.balance_manager.clone(),
             worker_tx: self.worker_tx.clone(),
+            threshold: self.threshold.clone(),
         }
     }
 }
 
 impl Node {
-    pub fn create(tx: mpsc::Sender<(SignedTransaction, String)>) -> Self {
+    pub fn create(tx: mpsc::Sender<(SignedTransaction, String)>, threshold: [u8; 32]) -> Self {
         Node {
             connections: Arc::new(Mutex::new(HashMap::new())),
             chain: Default::default(),
             blocks: Default::default(),
             balance_manager: Default::default(),
             worker_tx: tx,
+            threshold,
         }
     }
 }
@@ -66,12 +70,25 @@ impl Node {
         map.contains_key(ip)
     }
 
-    pub fn add_and_broadcast_block(&mut self, block: Block) {
+    pub fn add_block(&mut self, block: Block) {
         let block_hash = block.hash();
         println!("Adding block: {}", block_hash);
-        self.blocks.insert(block_hash.clone(), block.clone());
+        self.blocks.insert(block_hash.clone(), block);
         self.chain.push_back(block_hash);
+    }
 
-        self.broadcast(json!(block).to_string());
+    pub fn add_and_broadcast_block(&mut self, block: Block) {
+        self.add_block(block.clone());
+
+        let json_block = json!(block).to_string();
+        let block_msg = LC::Message {
+            typ: LC::MessageType::CreatedBlock,
+            action: None,
+            data: Some(json_block),
+        };
+
+        let json_msg = json!(block_msg).to_string();
+
+        self.broadcast(json_msg);
     }
 }
