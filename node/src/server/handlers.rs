@@ -60,6 +60,10 @@ pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<St
         return Err(a.to_string());
     }
 
+    if let Err(a) = node.balance_manager.process_transaction(&block.tx.data) {
+        return Err(a.to_string());
+    }
+
     println!("Valid block received!");
 
     node.add_block(block);
