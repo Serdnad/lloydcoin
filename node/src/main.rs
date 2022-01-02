@@ -14,6 +14,7 @@ mod node;
 mod node_sharing;
 mod server;
 mod transaction;
+mod update_blockchain;
 mod worker;
 
 fn main() {

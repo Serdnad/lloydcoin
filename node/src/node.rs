@@ -73,8 +73,15 @@ impl Node {
     pub fn add_block(&mut self, block: Block) {
         let block_hash = block.hash();
         println!("Adding block: {}", block_hash);
-        self.blocks.insert(block_hash.clone(), block);
-        self.chain.push_back(block_hash);
+        let result = self.balance_manager.process_transaction(&block.tx.data);
+
+        if let Err(a) = result {
+            println!("{}", a.to_string());
+            return;
+        } else {
+            self.blocks.insert(block_hash.clone(), block);
+            self.chain.push_back(block_hash);
+        }
     }
 
     pub fn add_and_broadcast_block(&mut self, block: Block) {

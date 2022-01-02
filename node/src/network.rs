@@ -1,6 +1,6 @@
 use crate::node;
 use crate::server;
-use crate::ws::{connect, listen, CloseCode, Handler, Handshake, Message, Result, Sender};
+use crate::ws::{connect, listen, CloseCode, Handler, Handshake, Result};
 use std::thread::spawn;
 
 pub fn run_server(node: node::Node) {
@@ -32,6 +32,8 @@ impl Handler for server::Server {
         self.node.add_new_connection(&self.socket, ip_addr);
 
         self.request_nodes();
+
+        self.request_new_blocks();
 
         Ok(())
     }

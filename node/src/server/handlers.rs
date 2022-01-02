@@ -1,3 +1,4 @@
+use crate::blockchain::balance_manager::BalanceManager;
 use crate::blockchain::block::{validate_proof_of_work, Block};
 use crate::transaction::{validate_transaction, SignedTransaction};
 use crate::Node;
@@ -45,14 +46,17 @@ pub fn get_block(node: &Node, request: &Message) -> Result<Option<String>, Strin
     }
 }
 
-pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<String>, String> {
-    let block: Block = serde_json::from_str(&data).unwrap();
-
-    if let Err(a) = validate_proof_of_work(&block, node.threshold) {
+pub fn validate_block(
+    prev_hash: String,
+    threshold: [u8; 32],
+    balance_manager: &BalanceManager,
+    block: &Block,
+) -> Result<(), String> {
+    if let Err(a) = validate_proof_of_work(&block, threshold) {
         return Err(a.to_string());
     }
 
-    if block.prev_hash != node.chain.back().unwrap() {
+    if block.prev_hash != prev_hash {
         return Err("Invalid prev_hash on received block".to_string());
     }
 
@@ -60,9 +64,18 @@ pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<St
         return Err(a.to_string());
     }
 
-    if let Err(a) = node.balance_manager.process_transaction(&block.tx.data) {
+    if let Err(a) = balance_manager.sufficient_funds(&block.tx.data) {
         return Err(a.to_string());
     }
+
+    Ok(())
+}
+
+pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<String>, String> {
+    let block: Block = serde_json::from_str(&data).unwrap();
+
+    let prev_hash = node.chain.back().unwrap();
+    validate_block(prev_hash, node.threshold, &node.balance_manager, &block)?;
 
     println!("Valid block received!");
 
@@ -83,15 +96,11 @@ pub fn validate_and_mine_transaction(
         tx.data.amount, tx.data.sender_key, tx.data.receiver_key
     );
 
-    if let Err(a) = validate_transaction(&tx) {
-        return Err(a.to_string());
-    }
+    validate_transaction(&tx)?;
 
     println!("Valid signature");
 
-    if let Err(a) = node.balance_manager.process_transaction(&tx.data) {
-        return Err(a.to_string());
-    }
+    node.balance_manager.sufficient_funds(&tx.data)?;
 
     println!("Valid amount");
 

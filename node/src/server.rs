@@ -1,7 +1,8 @@
+use crate::blockchain::block::Block;
 use crate::node;
 use crate::LC;
 
-mod handlers;
+pub mod handlers;
 mod server;
 
 pub struct Server {
@@ -56,6 +57,10 @@ impl Server {
         match request.action.as_ref().unwrap().as_ref() {
             "get_nodes" => Ok(Some(self.handle_get_nodes_request())),
             "get_block" => handlers::get_block(&self.node, &request),
+            "get_blocks" => {
+                let most_recent = request.data.unwrap();
+                Ok(self.handle_get_blocks_request(most_recent))
+            }
             "get_balance" => handlers::get_balance(&self.node, &request),
             "transaction" => {
                 let data = &request.data.unwrap();
@@ -78,6 +83,10 @@ impl Server {
             "get_nodes" => {
                 self.handle_get_nodes_response(response.data);
                 Ok(None)
+            }
+            "get_blocks" => {
+                let blocks: Vec<Block> = serde_json::from_str(&response.data.unwrap()).unwrap();
+                self.handle_get_blocks_response(blocks)
             }
             _ => Ok(Some(String::from("unsupported action"))),
         }

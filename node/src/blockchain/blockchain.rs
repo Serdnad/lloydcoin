@@ -1,14 +1,14 @@
-use std::collections::LinkedList;
 use std::collections::HashMap;
+use std::collections::LinkedList;
 
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc, Mutex};
 
 use std::fmt;
 
 type Hash = String;
 
 pub struct BlockChain {
-    chain_mutex: Arc<Mutex<LinkedList<Hash>>>
+    chain_mutex: Arc<Mutex<LinkedList<Hash>>>,
 }
 
 impl BlockChain {
@@ -18,8 +18,7 @@ impl BlockChain {
 
         if let Some(a) = back {
             Some(a.clone())
-        }
-        else {
+        } else {
             None
         }
     }
@@ -28,12 +27,17 @@ impl BlockChain {
         let mut chain = self.chain_mutex.lock().unwrap();
         chain.push_back(element);
     }
+
+    pub fn iter<R, T: Fn(std::collections::linked_list::Iter<'_, Hash>) -> R>(&self, func: T) -> R {
+        let chain = self.chain_mutex.lock().unwrap();
+        func(chain.iter())
+    }
 }
 
 impl Default for BlockChain {
     fn default() -> Self {
         BlockChain {
-            chain_mutex: Arc::new(Mutex::new(LinkedList::new()))
+            chain_mutex: Arc::new(Mutex::new(LinkedList::new())),
         }
     }
 }
@@ -41,7 +45,7 @@ impl Default for BlockChain {
 impl Clone for BlockChain {
     fn clone(&self) -> Self {
         BlockChain {
-            chain_mutex: Arc::clone(&self.chain_mutex)
+            chain_mutex: Arc::clone(&self.chain_mutex),
         }
     }
 }
