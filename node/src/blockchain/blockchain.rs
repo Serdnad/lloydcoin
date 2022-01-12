@@ -32,13 +32,22 @@ impl BlockChain {
         let chain = self.chain_mutex.lock().unwrap();
         func(chain.iter())
     }
+
+    pub fn len(&self) -> usize {
+        let chain = self.chain_mutex.lock().unwrap();
+        chain.len()
+    }
 }
 
 impl Default for BlockChain {
     fn default() -> Self {
-        BlockChain {
+        let mut blockchain = BlockChain {
             chain_mutex: Arc::new(Mutex::new(LinkedList::new())),
-        }
+        };
+
+        blockchain.push_back(String::from("GENESIS"));
+
+        blockchain
     }
 }
 

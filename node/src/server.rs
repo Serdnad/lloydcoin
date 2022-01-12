@@ -42,6 +42,7 @@ impl Server {
             LC::MessageType::Request => self.handle_request(parsed),
             LC::MessageType::Response => self.handle_response(parsed),
             LC::MessageType::CreatedBlock => {
+                self.request_new_blocks();
                 handlers::validate_and_add_block(&mut self.node, parsed.data.unwrap())
             }
             _ => Ok(Some(String::from("Unsupported type"))),
