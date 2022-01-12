@@ -1,4 +1,7 @@
+use crate::blockchain::balance_manager::BalanceManager;
 use crate::blockchain::block::Block;
+use crate::blockchain::blockchain::BlockChain;
+use crate::blockchain::blockmap::BlockMap;
 use crate::server::handlers;
 use crate::server::Server;
 use crate::LC;
@@ -32,15 +35,6 @@ impl Server {
             };
 
         let block_hashes = self.node.chain.iter(get_block_hashes);
-
-        // If the most_recent hash is never found then it will give the whole
-        // blockchain so GENESIS will be the last element.
-        // This means that the other node is more up-to-date, so send nothing.
-        if let Some(last) = block_hashes.last() {
-            if last == "GENESIS" {
-                return None;
-            }
-        }
 
         let mut blocks = Vec::new();
         for hash in block_hashes {
@@ -78,12 +72,79 @@ impl Server {
         }
     }
 
+    fn is_subchain(&mut self, blocks: &Vec<Block>) -> bool {
+        let most_recent_received = blocks.last().unwrap().prev_hash.clone();
+
+        let check_for_most_recent =
+            |iter: std::collections::linked_list::Iter<'_, String>| -> bool {
+                for hash in iter.rev() {
+                    if hash == &most_recent_received {
+                        return true;
+                    }
+                }
+                false
+            };
+
+        self.node.chain.iter(check_for_most_recent)
+    }
+
+    fn validate_entire_chain(&mut self, blocks: &Vec<Block>) -> Result<BalanceManager, String> {
+        let mut prev_hash = "GENESIS".to_string();
+        let threshold = self.node.threshold;
+        let mut balance_manager = BalanceManager::default();
+
+        for block in blocks.iter().rev() {
+            handlers::validate_block(prev_hash, threshold, &balance_manager, &block)?;
+            balance_manager.process_transaction(&block.tx.data)?;
+            prev_hash = block.hash();
+        }
+
+        Ok(balance_manager)
+    }
+
+    fn replace_chain(&mut self, blocks: Vec<Block>, balance_manager: BalanceManager) {
+        self.node.balance_manager = balance_manager;
+
+        let mut blockchain = BlockChain::default();
+        let mut block_map = BlockMap::default();
+        for block in blocks.into_iter().rev() {
+            blockchain.push_back(block.hash());
+            block_map.insert(block.hash(), block);
+        }
+
+        self.node.blocks = block_map;
+        self.node.chain = blockchain;
+    }
+
     pub fn handle_get_blocks_response(
         &mut self,
         blocks: Vec<Block>,
     ) -> Result<Option<String>, String> {
-        self.validate_blocks(&blocks)?;
-        self.add_blocks(blocks);
+        let last = blocks.last();
+
+        // If the last block (called first_block) is "GENSIS"
+        // then the whole chain was transferred over.
+        // There are two cases: either this transferred chain is a subchain or it is a different
+        // chain
+        // If it's a subchain, who cares.
+        // If it's longer, then replace the current chain
+        if let Some(first_block) = last {
+            if first_block.prev_hash == "GENESIS" {
+                if self.is_subchain(&blocks) {
+                    return Ok(None);
+                }
+
+                let balance_manager = self.validate_entire_chain(&blocks)?;
+                if blocks.len() > self.node.chain.len() {
+                    self.replace_chain(blocks, balance_manager);
+                } else {
+                    return Ok(None);
+                }
+            } else {
+                self.validate_blocks(&blocks)?;
+                self.add_blocks(blocks);
+            }
+        }
 
         Ok(None)
     }

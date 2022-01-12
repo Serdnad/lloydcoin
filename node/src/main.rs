@@ -29,7 +29,6 @@ fn main() {
     let worker_tx = worker::create_worker(tx, threshold);
 
     let mut node: node::Node = Node::create(worker_tx, threshold);
-    node.chain.push_back(String::from("GENESIS"));
 
     network::run_server(node.clone());
 

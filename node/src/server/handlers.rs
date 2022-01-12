@@ -75,6 +75,7 @@ pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<St
     let block: Block = serde_json::from_str(&data).unwrap();
 
     let prev_hash = node.chain.back().unwrap();
+
     validate_block(prev_hash, node.threshold, &node.balance_manager, &block)?;
 
     println!("Valid block received!");
