@@ -5,9 +5,18 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
+
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <router-link to="/">Go to Home</router-link>
+      <router-link to="/about">Go to About</router-link>  
+
+      <router-view></router-view>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

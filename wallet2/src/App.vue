@@ -1,6 +1,12 @@
 <template>
-    <div>
-        <h1>Lloyd Coin Wallet</h1>
+    <div id="app">
+        <router-link to="/">HOME</router-link>
+        <router-link to="/transfer">TRANSFER</router-link>
+        <router-link to="/wallet">WALLET</router-link>
+
+        <router-view></router-view>
+
+        <!-- <h1>Lloyd Coin Wallet</h1>
 
         <button @click="generateWallet">Generate Wallet</button>
 
@@ -23,10 +29,10 @@
         <hr />
         <input v-model="blockHash" placeholder="block hash" />
 
-        <button @click="getBlock">Get BLOCK</button>
+        <button @click="getBlock">Get BLOCK</button> -->
 
         <!-- <div v-if="block"> -->
-        <BlockDetails asd="asdq" :block="block" />
+        <!-- <BlockDetails asd="asdq" :block="block" /> -->
         <!-- </div> -->
     </div>
 </template>
@@ -159,6 +165,7 @@ initWebsocket()
         text-align: center;
     }
 }
+
 #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
