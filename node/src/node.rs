@@ -12,12 +12,21 @@ use ws::Sender;
 
 type Connections = Arc<Mutex<HashMap<String, Sender>>>;
 
+/// The Node struct
+///
+/// A Node has all the information about the blockchain and connections to other nodes.
 pub struct Node {
+    /// A list of the connections to other nodes.
     pub connections: Connections,
+    /// A list of the block hashes.
     pub chain: BlockChain,
+    /// A hashmap of block hashes and their content.
     pub blocks: BlockMap,
+    /// Keeps track of amount of money each wallet has.
     pub balance_manager: BalanceManager,
+    /// A tx to send blocks that need to be mined to the worker.
     pub worker_tx: mpsc::Sender<(SignedTransaction, String)>,
+    /// The threshold that block hashes need to be below.
     pub threshold: [u8; 32],
 }
 
@@ -48,16 +57,19 @@ impl Node {
 }
 
 impl Node {
+    /// Adds a new socket to the list of connections.
     pub fn add_new_connection(&mut self, socket: &Sender, ip_addr: String) {
         let mut map = self.connections.lock().unwrap();
         map.insert(ip_addr, socket.clone());
     }
 
+    /// Returns a list of all current connections.
     pub fn get_connections(&mut self) -> Vec<String> {
         let map = self.connections.lock().unwrap();
         map.keys().cloned().collect()
     }
 
+    /// Sends data to every socket in the list of connections.
     pub fn broadcast(&mut self, data: String) {
         let map = self.connections.lock().unwrap();
         for socket in map.values() {
@@ -65,11 +77,17 @@ impl Node {
         }
     }
 
+    /// Check if the ip is in the list of connections.
     pub fn contains_ip(&mut self, ip: &str) -> bool {
         let map = self.connections.lock().unwrap();
         map.contains_key(ip)
     }
 
+    /// Adds a block to the blockchain and blockmap.
+    ///
+    /// It checks if there are sufficient funds in the balance manager for
+    /// the transaction to occur. Then it adds the hash to the blockchain and
+    /// the contents to the blockmap.
     pub fn add_block(&mut self, block: Block) {
         let block_hash = block.hash();
         println!("Adding block: {}", block_hash);
@@ -84,6 +102,7 @@ impl Node {
         }
     }
 
+    /// Adds a block and then broadcasts the added block to all connections.
     pub fn add_and_broadcast_block(&mut self, block: Block) {
         self.add_block(block.clone());
 

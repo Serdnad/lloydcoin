@@ -15,6 +15,10 @@ impl BalanceManager {
         *accounts.get(account).unwrap_or(&0)
     }
 
+    /// Checks if the sender for the transaction has sufficient funds.
+    ///
+    /// # Errors
+    /// The sender does not have sufficient funds.
     pub fn sufficient_funds(&self, tx: &TransactionData) -> Result<(), &str> {
         let sender_balance = self.get_balance(&tx.sender_key);
 
@@ -25,8 +29,10 @@ impl BalanceManager {
         Ok(())
     }
 
-    /// Verify that all current balances allow the given transaction to be executed, and update
-    /// balances accordingly if so.
+    /// Update the receiver and sender funds based on the transaction
+    ///
+    /// # Errors
+    /// The sender has insufficient funds.
     pub fn process_transaction(&mut self, tx: &TransactionData) -> Result<(), &str> {
         let sender_balance = self.get_balance(&tx.sender_key);
         let recipient_balance = self.get_balance(&tx.receiver_key);
@@ -49,6 +55,7 @@ impl Default for BalanceManager {
         let new = BalanceManager {
             accounts_mutex: Arc::new(Mutex::new(HashMap::new())),
         };
+        // the public key of the initial account with all coins
         new.accounts_mutex.lock().unwrap().insert(
             "02eed7e3ce21528429310300046cd3d41434bcaac7c78bb930735c7913b52eb79d".to_string(),
             500,

@@ -1,15 +1,19 @@
 use std::convert::TryInto;
 
-use k256::{ecdsa::{signature::Verifier, VerifyingKey}, ecdsa, EncodedPoint};
+use k256::ecdsa::recoverable::Id;
+use k256::ecdsa::signature::Signature;
+use k256::ecdsa::DerSignature;
+use k256::{
+    ecdsa,
+    ecdsa::{signature::Verifier, VerifyingKey},
+    EncodedPoint,
+};
 use k256::{
     ecdsa::{signature::Signer, SigningKey},
     SecretKey,
 };
-use k256::ecdsa::DerSignature;
-use k256::ecdsa::recoverable::Id;
-use k256::ecdsa::signature::Signature;
-use rsa::{hash, padding, pkcs8, PublicKey, RsaPublicKey};
 use rsa::Hash::SHA2_256;
+use rsa::{hash, padding, pkcs8, PublicKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
@@ -50,13 +54,15 @@ pub fn transaction_request(transaction: Option<String>) -> Result<SignedTransact
     Ok(tx)
 }
 
-/// Validate a transaction.
+/// Check that the transaction has a valid signature.
 ///
 /// A transaction is valid if the following hold:
-/// - (TODO) The transaction is dated in the past.
 /// - The private key used to sign the transaction (signature) matches the public key in sender_key.
 ///
 /// Note: `signature` must be a ECDSA/secp256k1 signature (ASN.1 DER encoded) in hex format.
+///
+/// # Errors
+/// The signature is not valid.
 pub fn validate_transaction(transaction: &SignedTransaction) -> Result<(), &str> {
     let signature_bytes = hex::decode(&transaction.signature).unwrap();
     let der_signature = k256::ecdsa::DerSignature::from_bytes(signature_bytes.as_slice()).unwrap();
@@ -68,8 +74,15 @@ pub fn validate_transaction(transaction: &SignedTransaction) -> Result<(), &str>
     let mut digest = sha3::Sha3_256::new();
     digest.update(json!(&transaction.data).to_string().as_bytes());
 
-    let recoverable_signature = k256::ecdsa::recoverable::Signature::from_digest_trial_recovery(&verifying_key, digest.clone(), &signature).unwrap();
-    let recovered_key = recoverable_signature.recover_verify_key_from_digest(digest.clone()).unwrap();
+    let recoverable_signature = k256::ecdsa::recoverable::Signature::from_digest_trial_recovery(
+        &verifying_key,
+        digest.clone(),
+        &signature,
+    )
+    .unwrap();
+    let recovered_key = recoverable_signature
+        .recover_verify_key_from_digest(digest.clone())
+        .unwrap();
 
     if sender_key_bytes.as_slice() == recovered_key.to_bytes().as_slice() {
         Ok(())

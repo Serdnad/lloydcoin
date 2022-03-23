@@ -5,15 +5,15 @@ use crate::LC;
 pub mod handlers;
 mod server;
 
+/// Keeps track of a single connection and the Node information.
 pub struct Server {
     pub socket: ws::Sender,
     pub node: node::Node,
 }
 
 impl Server {
+    /// Responds to any data received from the connection.
     pub fn handle_data_received(&mut self, msg: ws::Message) {
-        let socket = &self.socket.clone();
-
         let response = match msg {
             ws::Message::Text(msg) => self.handle_message(msg),
             _ => Err(String::from("message type not supported")),
@@ -21,15 +21,14 @@ impl Server {
 
         if response.is_ok() {
             if let Some(data) = response.unwrap() {
-                socket.send(data);
+                self.socket.send(data);
             }
         } else {
             println!("{}", response.err().unwrap());
         }
     }
 
-    /// Determine whether a message received by this node is a new request, or a response to a
-    /// request made by this node, and route it accordingly.
+    /// Dispatch message to handlers based on MessageType
     fn handle_message(&mut self, msg: String) -> Result<Option<String>, String> {
         let parsed: Result<LC::Message, _> = serde_json::from_str(&msg);
         if parsed.is_err() {
@@ -42,6 +41,7 @@ impl Server {
             LC::MessageType::Request => self.handle_request(parsed),
             LC::MessageType::Response => self.handle_response(parsed),
             LC::MessageType::CreatedBlock => {
+                // Synchronize blocks everytime a new one is received
                 self.request_new_blocks();
                 handlers::validate_and_add_block(&mut self.node, parsed.data.unwrap())
             }
@@ -72,9 +72,6 @@ impl Server {
     }
 
     /// Handle a response to a request previously sent out by this node.
-    /// TODO: A much better way (i think) to do this would be to store an ID for any request made,
-    ///     with relevant data, and then complete them. that'll also make the ping/pong process
-    ///     easier I'd think, as far as detecting timeouts.
     fn handle_response(&mut self, response: LC::Message) -> Result<Option<String>, String> {
         if response.action.is_none() {
             return Err(String::from("action is missing"));

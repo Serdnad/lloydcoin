@@ -10,7 +10,10 @@ use hex::FromHex;
 extern crate rand;
 use rand::Rng;
 
-/// Handle a request for an account's balance.
+/// Return the balance in a given account
+///
+/// # Errors
+/// No account was provided in the request.
 pub fn get_balance(node: &Node, request: &Message) -> Result<Option<String>, String> {
     match &request.data {
         None => Err(String::from("no account supplied")),
@@ -28,7 +31,11 @@ pub fn get_balance(node: &Node, request: &Message) -> Result<Option<String>, Str
     }
 }
 
-/// Handle a request for a block.
+/// Return the block with the given hash
+///
+/// # Errors
+/// No block hash is provided in the request.
+/// No block with that hash exists.
 pub fn get_block(node: &Node, request: &Message) -> Result<Option<String>, String> {
     match &request.data {
         None => Err(String::from("no block hash supplied")),
@@ -46,6 +53,15 @@ pub fn get_block(node: &Node, request: &Message) -> Result<Option<String>, Strin
     }
 }
 
+/// Checks whether a given block is valid.
+///
+/// Validates the proof of work (aka is the hash below the threshold).
+/// Checks that the block's previous hash is the most recent block.
+/// Checks that the signature is valid.
+/// Checks that there are sufficient funds for the transaction to occur.
+///
+/// # Errors
+/// Each check returns an error if it fails.
 pub fn validate_block(
     prev_hash: String,
     threshold: [u8; 32],
@@ -71,6 +87,10 @@ pub fn validate_block(
     Ok(())
 }
 
+/// Validates a block and then adds it to the Node.
+///
+/// # Errors
+/// The block is not valid.
 pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<String>, String> {
     let block: Block = serde_json::from_str(&data).unwrap();
 
@@ -85,7 +105,11 @@ pub fn validate_and_add_block(node: &mut Node, data: String) -> Result<Option<St
     Ok(None)
 }
 
-/// Validate a transaction and submit it to the network if valid.
+/// Validates a transaction and then send it to the worker to be mined.
+///
+/// # Errors
+/// The transaction is not valid (aka invalid signature).
+/// There aren't sufficient funds for the transaction to occur.
 pub fn validate_and_mine_transaction(
     node: &mut Node,
     data: String,

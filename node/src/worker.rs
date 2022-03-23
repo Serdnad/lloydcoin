@@ -6,10 +6,16 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+/// Tx used by Node to send blocks that need to be mined.
 type InfoTransmitter = mpsc::Sender<(SignedTransaction, String)>;
+
+/// Tx used by Worker to send mined blocks to main.rs.
 type BlockTransmitter = mpsc::Sender<Block>;
+
+/// Rx used by Worker to received blocks that need to be mined.
 type Receiver = mpsc::Receiver<(SignedTransaction, String)>;
 
+/// Checks if the hash of the block is lower than the threshold.
 pub fn does_nonce_work(block: &Block, threshold: [u8; 32]) -> bool {
     let hash = hex::decode(block.hash()).unwrap();
 
@@ -27,6 +33,7 @@ pub fn does_nonce_work(block: &Block, threshold: [u8; 32]) -> bool {
     }
 }
 
+/// Receives blocks from a Node and then mines them.
 fn do_work(node_tx: BlockTransmitter, rx: Receiver, threshold: [u8; 32]) {
     let mut rng = rand::thread_rng();
 
@@ -34,6 +41,8 @@ fn do_work(node_tx: BlockTransmitter, rx: Receiver, threshold: [u8; 32]) {
         let (transaction, prev_hash) = rx.recv().unwrap();
 
         loop {
+            // TODO: Random is bad. Do it sequentially.
+            // Maybe have multiple threads start a different points.
             let nonce: u64 = rng.gen();
 
             let block = Block {
@@ -55,6 +64,9 @@ fn do_work(node_tx: BlockTransmitter, rx: Receiver, threshold: [u8; 32]) {
     }
 }
 
+/// Creates thread for the worker to receives and mine blocks.
+///
+/// Also returns tx for Node to use to send blocks.
 pub fn create_worker(node_tx: BlockTransmitter, threshold: [u8; 32]) -> InfoTransmitter {
     let (tx, rx) = mpsc::channel();
 

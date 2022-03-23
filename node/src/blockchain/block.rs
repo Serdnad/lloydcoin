@@ -14,6 +14,7 @@ pub struct Block {
     pub nonce: u64,
 }
 
+/// Checks that the hash of the block is less than the threshold.
 pub fn validate_proof_of_work(block: &Block, threshold: [u8; 32]) -> Result<(), &str> {
     if worker::does_nonce_work(&block, threshold) {
         return Ok(());

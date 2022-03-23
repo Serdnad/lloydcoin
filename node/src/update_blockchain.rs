@@ -8,6 +8,9 @@ use crate::LC;
 use serde_json::json;
 
 impl Server {
+    /// Send request for new blocks
+    ///
+    /// Sends the hash of the most recent block.
     pub fn request_new_blocks(&self) {
         let most_recent = self.node.chain.back();
         println!("Sending request with most recent {:?}", most_recent);
@@ -21,6 +24,10 @@ impl Server {
         self.socket.send(request.to_string());
     }
 
+    /// Send back all blocks more recent than the given hash.
+    ///
+    /// If the given hash does not in appear in the chain,
+    /// it sends back the whole chain including the GENSIS block.
     pub fn handle_get_blocks_request(&mut self, most_recent: String) -> Option<String> {
         println!(
             "Received get blocks request with most recent {:?}",
@@ -52,6 +59,14 @@ impl Server {
         Some(response.to_string())
     }
 
+    /// Check that all the blocks are valid.
+    ///
+    /// It creates a new temporary balance manager to keep track of
+    /// how each block affects balances.
+    ///
+    /// # Errors
+    /// A block is invalid.
+    /// There are insufficient funds.
     fn validate_blocks(&self, blocks: &Vec<Block>) -> Result<(), String> {
         let mut prev_hash = self.node.chain.back().unwrap();
         let threshold = self.node.threshold;
@@ -66,12 +81,17 @@ impl Server {
         Ok(())
     }
 
+    /// Adds a list of blocks to the node.
     fn add_blocks(&mut self, blocks: Vec<Block>) {
         for block in blocks.into_iter().rev() {
             self.node.add_block(block);
         }
     }
 
+    /// Checks if a given list of blocks already occurs in the node.
+    ///
+    /// It does not check if all of them occur in the chain. It only checks if the
+    /// top node in the list occurs in the chain.
     fn is_subchain(&mut self, blocks: &Vec<Block>) -> bool {
         let most_recent_received = blocks.last().unwrap().prev_hash.clone();
 
@@ -88,6 +108,14 @@ impl Server {
         self.node.chain.iter(check_for_most_recent)
     }
 
+    /// Checks if the entire chain is valid.
+    ///
+    /// This is like validate_blocks except it starts from the GENESIS block
+    /// and returns the new balance manager at the end instead of discarding it.
+    ///
+    /// # Errors
+    /// A block is invalid.
+    /// There are insufficient funds.
     fn validate_entire_chain(&mut self, blocks: &Vec<Block>) -> Result<BalanceManager, String> {
         let mut prev_hash = "GENESIS".to_string();
         let threshold = self.node.threshold;
@@ -102,6 +130,7 @@ impl Server {
         Ok(balance_manager)
     }
 
+    /// Replaces the current blockchain, blockmap, and balance_manager with new ones.
     fn replace_chain(&mut self, blocks: Vec<Block>, balance_manager: BalanceManager) {
         self.node.balance_manager = balance_manager;
 
@@ -116,6 +145,19 @@ impl Server {
         self.node.chain = blockchain;
     }
 
+    /// Receive the most recent blocks and add them if needed.
+    ///
+    /// If the other node was behind, then it wouldn't have the hash
+    /// and so will send over its whole chain. This will be a subchain and thus ignored.
+    ///
+    /// If the other node was ahead, then it will send a couple new blocks
+    /// and these will be added.
+    ///
+    /// If it is an entirely different chain that is longer,
+    /// it will entirely replace the current chain.
+    ///
+    /// # Errors
+    /// The given blocks are not valid.
     pub fn handle_get_blocks_response(
         &mut self,
         blocks: Vec<Block>,
