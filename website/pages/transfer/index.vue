@@ -1,15 +1,42 @@
+<script lang="ts">
+    // import Transfer from "../../api/transfer"
+
+    // let amount, receiver
+
+    // async function transfer() {
+    //     Transfer.transfer(amount, receiver)
+    // }
+
+    import Transfer from "../../api/transfer"
+
+    export default {
+        data() {
+            return {
+                amount: 0,
+                recipient: "",
+                ips: [],
+            }
+        },
+        methods: {
+            transfer() {
+                Transfer.transfer(this.amount, this.recipient)
+            },
+        },
+    }
+</script>
+
 <template>
     <div class="content">
         <div class="container">
             <div class="input-row">
-                <input placeholder="how much" />
+                <input v-model="amount" placeholder="how much" />
             </div>
 
             <div class="input-row">
-                <input placeholder="to whom" />
+                <input v-model="recipient" placeholder="to whom" />
             </div>
 
-            <button>transfer</button>
+            <button v-on:click="transfer">transfer</button>
         </div>
     </div>
 </template>

@@ -36,7 +36,7 @@ fn main() {
 
     network::run_server(node.clone());
 
-    let GOD: String = "ws://192.168.4.26:9001".to_string();
+    let GOD: String = "ws://10.8.57.232:9001".to_string();
     network::connect_to_ip(GOD, node.clone());
 
     // Blocks that the worker completes are sent here and then sent to a node
