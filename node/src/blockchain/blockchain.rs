@@ -7,6 +7,8 @@ use std::fmt;
 
 type Hash = String;
 
+/// A Blockchain holds a list of Block hashes.
+/// Each hash is tied to a Block via BlockMap.
 pub struct BlockChain {
     chain_mutex: Arc<Mutex<LinkedList<Hash>>>,
 }
@@ -14,13 +16,9 @@ pub struct BlockChain {
 impl BlockChain {
     pub fn back(&self) -> Option<Hash> {
         let chain = self.chain_mutex.lock().unwrap();
-        let back = chain.back();
+        let hash = chain.back()?;
 
-        if let Some(a) = back {
-            Some(a.clone())
-        } else {
-            None
-        }
+        Some(hash.clone())
     }
 
     pub fn push_back(&mut self, element: Hash) {

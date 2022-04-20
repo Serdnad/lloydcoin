@@ -7,6 +7,8 @@ use crate::worker;
 
 type Hash = String;
 
+/// A Block is the fundamental unit of the blockchain.
+/// Currently, each block holds exactly one transaction.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Block {
     pub prev_hash: Hash,

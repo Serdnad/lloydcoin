@@ -164,8 +164,8 @@ impl Server {
     ) -> Result<Option<String>, String> {
         let last = blocks.last();
 
-        // If the last block (called first_block) is "GENSIS"
-        // then the whole chain was transferred over.
+        // If the last block (called first_block) is "GENESIS", then the whole chain was
+        // transferred over.
         // There are two cases: either this transferred chain is a subchain or it is a different
         // chain
         // If it's a subchain, who cares.
