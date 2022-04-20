@@ -1,11 +1,13 @@
 extern crate ws;
 
-use std::thread::spawn;
+use std::sync::mpsc;
+use std::thread;
+use std::thread::{spawn, Thread};
 
-use ws::{connect, listen, CloseCode, Handler, Handshake, Message, Result, Sender};
+use clap::Parser;
+use ws::{CloseCode, connect, Handler, Handshake, listen, Message, Result, Sender};
 
 use crate::node::Node;
-use std::sync::mpsc;
 
 mod LC;
 mod blockchain;
@@ -16,8 +18,19 @@ mod server;
 mod transaction;
 mod update_blockchain;
 mod worker;
+mod http_server;
 
-fn main() {
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct CliArgs {
+    // #[clap(short, long, default_value = "9001")]
+    // port: u16,
+}
+
+#[tokio::main]
+async fn main() {
+    let args: CliArgs = CliArgs::parse();
+
     // The hash of a block must be below this threshold
     // More 0x00 means harder
     let threshold: [u8; 32] = [
@@ -36,7 +49,14 @@ fn main() {
 
     network::run_server(node.clone());
 
-    let GOD: String = "ws://10.8.57.232:9001".to_string();
+
+    let node_copy = node.clone();
+    tokio::spawn(async move {
+        http_server::handlers::start_server(node_copy).await;
+    });
+
+
+    let GOD: String = "ws://127.0.0.1:9001".to_string();
     network::connect_to_ip(GOD, node.clone());
 
     // Blocks that the worker completes are sent here and then sent to a node

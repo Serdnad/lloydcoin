@@ -4,7 +4,7 @@ use crate::ws::{connect, listen, CloseCode, Handler, Handshake, Result};
 use std::thread::spawn;
 
 /// Creates a thread that listens for incoming connections.
-pub fn run_server(node: node::Node) {
+pub fn run_server(node: node::Node,) {
     let localhost = "0.0.0.0:9001";
 
     spawn(move || {

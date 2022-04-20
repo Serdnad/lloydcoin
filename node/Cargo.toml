@@ -16,7 +16,14 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0.68" }
 lazy_static = "1.4.0"
 hex = "*"
+clap = { version = "3.1.10", features = ["derive"] }
 
 sha3 = "0.9.1"
-#ecdsa = "0.13.3"
 k256 = { version = "0.9.6", features = ["ecdsa", "ecdsa-core", "keccak256"] }
+
+tokio = { version = "1.17.0", features = ["full"] }
+hyper = { version = "0.14.18", features = ["full"] }
+tower = { version = "0.4.12", features = ["full"] }
+treemux = "0.8.0"
+
+once_cell = "1.10.0"

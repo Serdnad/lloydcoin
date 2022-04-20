@@ -42,7 +42,7 @@ impl Server {
     fn connect_to_new_ips(&mut self, new_ips: Vec<String>) {
         for ip in new_ips {
             if !self.node.contains_ip(&ip) {
-                let url = "ws://".to_owned() + &ip + ":9001";
+                let url = format!("ws://{}:9001", &ip);
                 crate::network::connect_to_ip(url, self.node.clone());
             }
         }

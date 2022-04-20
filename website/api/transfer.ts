@@ -3,7 +3,6 @@ import { SHA3 } from "sha3"
 
 module Transfer {
     export async function transfer(amount: bigint, to: string) {
-
         // tODO: MAKE SINGLE WALLET SINGLETON GLOBALLY ACCESSIBLE
         const privKey = localStorage.getItem("wallet-pkey")
         let wallet: Wallet
@@ -25,33 +24,23 @@ module Transfer {
 
         const txSigned: any = {
             data: tx,
-            signature: signature.toDER("hex")
+            signature: signature.toDER("hex"),
         }
-
-
-
-
-
 
         const payload = {
             typ: "Request",
             action: "transaction",
-            data: JSON.stringify(txSigned)
+            data: JSON.stringify(txSigned),
         }
 
-
-
-        const socket = connect_to_ip('10.8.57.232', {})
+        const socket = connect_to_ip("127.0.0.1", {})
 
         setTimeout(() => {
-
             console.log(socket)
 
             const r = socket.send(JSON.stringify(payload))
             console.log(r)
-        }, 2000);
-
-
+        }, 2000)
     }
 }
 
@@ -100,7 +89,6 @@ function createVertebra(amount, receiver_id, sender_id) {
 
 function broadcast(data, connections) {
     // let stringify_data = JSON.stringify(data)
-
     // for (let socket of Object.values(connections)) {
     //     socket.send(stringify_data)
     // }

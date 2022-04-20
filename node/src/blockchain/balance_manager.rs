@@ -2,6 +2,10 @@ use crate::transaction::TransactionData;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
+const GENESIS_WALLET: &str = "02eed7e3ce21528429310300046cd3d41434bcaac7c78bb930735c7913b52eb79d";
+const GENESIS_AMOUNT: u64 = 1.960e9 as u64; // Lloyd was built in 1960
+// TODO: or should we make, like, 69 million ?
+
 type Balance = u64;
 
 pub struct BalanceManager {
@@ -55,10 +59,11 @@ impl Default for BalanceManager {
         let new = BalanceManager {
             accounts_mutex: Arc::new(Mutex::new(HashMap::new())),
         };
+
         // the public key of the initial account with all coins
         new.accounts_mutex.lock().unwrap().insert(
-            "02eed7e3ce21528429310300046cd3d41434bcaac7c78bb930735c7913b52eb79d".to_string(),
-            500,
+            GENESIS_WALLET.to_string(),
+            GENESIS_AMOUNT,
         );
         new
     }
